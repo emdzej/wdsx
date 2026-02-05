@@ -3,27 +3,46 @@
   "version": "1.0.0",
   "description": "Modern web application port of the legacy BMW WDS (Wiring Diagram System) Java applet.",
   "main": "index.js",
+  "type": "module",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "import": "tsx tools/importer/src/index.ts",
+    "import:dry": "tsx tools/importer/src/index.ts --dry-run",
+    "validate": "tsx tools/importer/src/validate.ts",
+    "clean": "rm -rf data/*",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/emdzej/wds.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "keywords": [
+    "wds",
+    "bmw",
+    "wiring-diagrams",
+    "automotive",
+    "legacy-modernization"
+  ],
+  "author": "emdzej",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/emdzej/wds/issues"
   },
   "homepage": "https://github.com/emdzej/wds#readme",
   "devDependencies": {
     "@types/node": "^25.2.1",
+    "@types/turndown": "^5.0.6",
+    "@types/xml2js": "^0.4.14",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "jsdom": "^28.0.0",
+    "turndown": "^7.2.2",
+    "xml2js": "^0.6.2",
+    "zod": "^4.3.6"
   }
 }
