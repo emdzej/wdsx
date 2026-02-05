@@ -2,7 +2,9 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
+	import TreeBrowser from '$lib/components/TreeBrowser.svelte';
 	import { browser } from '$app/environment';
+	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { createCollapsible, createSwitch, melt } from '@melt-ui/svelte';
 
@@ -120,16 +122,13 @@
 				</button>
 			</div>
 			<div class="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
-				<div class="rounded-lg border border-dashed border-slate-300 px-3 py-4 text-center dark:border-slate-700">
-					Tree navigation coming soon
-				</div>
-				<ul class="space-y-2">
-					<li class="rounded-md bg-slate-100 px-3 py-2 font-medium text-slate-700 dark:bg-slate-900 dark:text-slate-100">
-						Overview
-					</li>
-					<li class="px-3 py-2">Schemas</li>
-					<li class="px-3 py-2">Components</li>
-				</ul>
+				{#if $page.data?.model?.tree}
+					<TreeBrowser tree={$page.data.model.tree} modelId={$page.data.model.modelId} />
+				{:else}
+					<div class="rounded-lg border border-dashed border-slate-300 px-3 py-4 text-center dark:border-slate-700">
+						Select a model to browse the tree.
+					</div>
+				{/if}
 			</div>
 		</aside>
 
