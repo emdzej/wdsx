@@ -3,6 +3,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import Breadcrumb from '$lib/components/Breadcrumb.svelte';
 	import TreeBrowser from '$lib/components/TreeBrowser.svelte';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 	import { browser } from '$app/environment';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -63,7 +64,10 @@
 					<div class="text-lg font-semibold">WDS Viewer</div>
 				</div>
 			</div>
-			<div class="flex items-center gap-3">
+			<div class="flex w-full items-center gap-3">
+				<div class="flex-1">
+					<SearchBar />
+				</div>
 				<div class="hidden items-center gap-2 text-sm text-slate-500 sm:flex">
 					<label for="model-select" class="font-medium">Model</label>
 					<select

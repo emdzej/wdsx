@@ -27,6 +27,7 @@
 	},
 	"dependencies": {
 		"@melt-ui/svelte": "^0.86.6",
+		"flexsearch": "^0.8.212",
 		"markdown-it": "^14.1.0",
 		"panzoom": "^9.4.3"
 	}
