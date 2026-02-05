@@ -77,7 +77,7 @@
 		</div>
 		<button
 			type="submit"
-			class="rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+			class="rounded-md border border-slate-200 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500 shadow-sm transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
 		>
 			Search
 		</button>
@@ -95,7 +95,7 @@
 						<li>
 							<a
 								href={getResultLink(result)}
-								class="flex items-start justify-between gap-3 rounded-md px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-900"
+								class="flex items-start justify-between gap-3 rounded-md px-3 py-2 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:hover:bg-slate-900"
 							>
 								<div>
 									<div class="font-medium text-slate-800 dark:text-slate-100">{result.title}</div>
@@ -111,7 +111,10 @@
 					{/each}
 				</ul>
 				<div class="mt-2 border-t border-slate-100 pt-2 text-right text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-					<a href={`/search?q=${encodeURIComponent(query.trim())}`} class="hover:text-slate-700 dark:hover:text-slate-200">
+					<a
+						href={`/search?q=${encodeURIComponent(query.trim())}`}
+						class="transition hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:hover:text-slate-200"
+					>
 						View all results →
 					</a>
 				</div>

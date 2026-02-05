@@ -1,10 +1,14 @@
 <script lang="ts">
+	import { navigating } from '$app/stores';
 	import ModelCard from '$lib/components/ModelCard.svelte';
+	import ModelCardSkeleton from '$lib/components/ModelCardSkeleton.svelte';
 	import type { ModelIndexEntry } from '$lib/utils/data-loader';
 
 	let { data } = $props<{
 		models: ModelIndexEntry[];
 	}>();
+
+	const skeletons = Array.from({ length: 6 });
 </script>
 
 <section class="space-y-4">
@@ -16,8 +20,14 @@
 	</div>
 
 	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-		{#each data.models as model}
-			<ModelCard {model} />
-		{/each}
+		{#if $navigating}
+			{#each skeletons as _}
+				<ModelCardSkeleton />
+			{/each}
+		{:else}
+			{#each data.models as model}
+				<ModelCard {model} />
+			{/each}
+		{/if}
 	</div>
 </section>

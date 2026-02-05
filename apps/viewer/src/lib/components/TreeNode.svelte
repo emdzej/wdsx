@@ -8,7 +8,7 @@
 	export let depth = 0;
 	export let modelId: string;
 
-	const dispatch = createEventDispatcher<{ toggle: { id: string } }>();
+	const dispatch = createEventDispatcher<{ toggle: { id: string }; navigate: void }>();
 
 	$: isFolder = node.type === 'folder' || (node.children?.length ?? 0) > 0;
 	$: isExpanded = expandedIds.has(node.id);
@@ -23,11 +23,13 @@
 
 	function openDiagram() {
 		if (!diagramId) return;
+		dispatch('navigate');
 		goto(`/${modelId}/diagram/${diagramId}`);
 	}
 
 	function openInfo() {
 		if (!infoId) return;
+		dispatch('navigate');
 		goto(`/${modelId}/info/${infoId}`);
 	}
 
@@ -44,7 +46,7 @@
 	>
 		{#if isFolder}
 			<button
-				class="flex w-full items-center gap-2 text-left"
+				class="flex w-full items-center gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
 				on:click|stopPropagation={toggle}
 				type="button"
 				aria-expanded={isExpanded}
@@ -65,7 +67,11 @@
 			</button>
 		{:else}
 			<div class="flex items-center gap-2">
-				<button class="flex flex-1 items-center gap-2 text-left" on:click={openPrimary} type="button">
+				<button
+					class="flex flex-1 items-center gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
+					on:click={openPrimary}
+					type="button"
+				>
 					<span class="inline-flex h-5 w-5 items-center justify-center text-slate-400">
 						<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
 							<path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-6z" />
@@ -77,7 +83,7 @@
 				<div class="flex items-center gap-1">
 					{#if diagramId}
 						<button
-							class="rounded-md p-1 text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+							class="rounded-md p-1 text-slate-500 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:text-slate-300 dark:hover:bg-slate-800"
 							on:click|stopPropagation={openDiagram}
 							title="Open diagram"
 							type="button"
@@ -89,7 +95,7 @@
 					{/if}
 					{#if infoId}
 						<button
-							class="rounded-md p-1 text-slate-500 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+							class="rounded-md p-1 text-slate-500 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:text-slate-300 dark:hover:bg-slate-800"
 							on:click|stopPropagation={openInfo}
 							title="Open info"
 							type="button"
@@ -115,6 +121,7 @@
 					depth={depth + 1}
 					{modelId}
 					on:toggle
+					on:navigate
 				/>
 			{/each}
 		</ul>

@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import TreeNode from '$lib/components/TreeNode.svelte';
 	import type { ModelTreeNode } from '$lib/utils/data-loader';
 
 	export let tree: ModelTreeNode;
 	export let modelId: string;
 
+	const dispatch = createEventDispatcher<{ navigate: void }>();
 	let expandedIds = new Set<string>();
 	let ready = false;
 
@@ -42,6 +43,10 @@
 		}
 		expandedIds = new Set(expandedIds);
 	}
+
+	function handleNavigate() {
+		dispatch('navigate');
+	}
 </script>
 
 <nav class="space-y-3">
@@ -51,7 +56,14 @@
 	</div>
 	<ul class="space-y-1">
 		{#if tree}
-			<TreeNode node={tree} {expandedIds} depth={0} {modelId} on:toggle={handleToggle} />
+			<TreeNode
+				node={tree}
+				{expandedIds}
+				depth={0}
+				{modelId}
+				on:toggle={handleToggle}
+				on:navigate={handleNavigate}
+			/>
 		{:else}
 			<li class="text-xs text-slate-400">No tree data.</li>
 		{/if}

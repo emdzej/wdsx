@@ -3,6 +3,7 @@
 	import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte';
 	import panzoom from 'panzoom';
 	import { extractComponentIds } from '$lib/utils/svg-components';
+	import Spinner from '$lib/components/Spinner.svelte';
 
 	export let src: string;
 	export let height = 'calc(100vh - 12rem)';
@@ -152,12 +153,12 @@
 	}
 </script>
 
-<div class={`flex w-full flex-col gap-2 ${dark ? 'text-slate-100' : 'text-slate-900'}`} style={`height: ${height};`} bind:this={viewer}>
-	<div class="flex flex-wrap items-center gap-2">
+<div class={`print-diagram flex w-full flex-col gap-2 ${dark ? 'text-slate-100' : 'text-slate-900'}`} style={`height: ${height};`} bind:this={viewer}>
+	<div class="svg-controls no-print flex flex-wrap items-center gap-2">
 		<div class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 text-xs text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
 			<button
 				type="button"
-				class="rounded px-2 py-1 font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
+				class="rounded px-2 py-1 font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:text-slate-200 dark:hover:bg-slate-900"
 				on:click={zoomIn}
 				aria-label="Zoom in"
 				title="Zoom in (+)"
@@ -166,7 +167,7 @@
 			</button>
 			<button
 				type="button"
-				class="rounded px-2 py-1 font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
+				class="rounded px-2 py-1 font-semibold text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:text-slate-200 dark:hover:bg-slate-900"
 				on:click={zoomOut}
 				aria-label="Zoom out"
 				title="Zoom out (-)"
@@ -175,7 +176,7 @@
 			</button>
 			<button
 				type="button"
-				class="rounded px-2 py-1 font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
+				class="rounded px-2 py-1 font-medium text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:text-slate-200 dark:hover:bg-slate-900"
 				on:click={resetView}
 				aria-label="Reset view"
 				title="Reset view (0)"
@@ -184,7 +185,7 @@
 			</button>
 			<button
 				type="button"
-				class="rounded px-2 py-1 font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900"
+				class="rounded px-2 py-1 font-medium text-slate-700 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:text-slate-200 dark:hover:bg-slate-900"
 				on:click={toggleFullscreen}
 				aria-label="Toggle fullscreen"
 				title="Fullscreen (F)"
@@ -193,7 +194,7 @@
 			</button>
 		</div>
 		<div class="text-xs text-slate-400">
-			Use mouse wheel/drag or shortcuts: +, -, 0, F
+			Use mouse wheel/drag or pinch to zoom. Shortcuts: +, -, 0, F
 		</div>
 	</div>
 
@@ -205,7 +206,9 @@
 		on:click={handleClick}
 	>
 		{#if loading}
-			<div class="flex h-full items-center justify-center text-sm text-slate-400">Loading diagram…</div>
+			<div class="flex h-full items-center justify-center">
+				<Spinner label="Loading diagram" />
+			</div>
 		{:else if error}
 			<div class="flex h-full items-center justify-center text-sm text-red-400">{error}</div>
 		{:else}
@@ -220,6 +223,7 @@
 	:global(.svg-viewer-content svg) {
 		width: 100%;
 		height: 100%;
+		touch-action: none;
 	}
 
 	:global(.svg-viewer-content text) {

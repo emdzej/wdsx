@@ -1,2 +1,28 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+
+@media print {
+	header,
+	aside,
+	.no-print {
+		display: none !important;
+	}
+
+	main {
+		padding: 0 !important;
+	}
+
+	.print-diagram {
+		height: auto !important;
+	}
+
+	.print-diagram .svg-viewer-content svg {
+		width: 100% !important;
+		height: auto !important;
+	}
+
+	body {
+		background: white;
+		color: #000;
+	}
+}
