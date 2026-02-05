@@ -3,6 +3,7 @@ import { join, extname } from "node:path";
 import { parseModelTree, parseLink } from "../parsers/xml-parser.js";
 import { processSvgzFile } from "../processors/svg-processor.js";
 import { processHtmlFile } from "../processors/html-processor.js";
+import { copyModelImages } from "../processors/image-processor.js";
 import type { SourceFolder, SourceLeaf, SourceRoot } from "../types/source.js";
 import type { ModelTree, TreeNode, IconDefinition } from "../types/target.js";
 
@@ -154,10 +155,20 @@ function countNodes(node: TreeNode): number {
   return 1 + (node.children?.reduce((sum, child) => sum + countNodes(child), 0) ?? 0);
 }
 
-function mapIcons(imageList: { image: { $: { name: string; file: string } }[] }): IconDefinition[] {
+function normalizeIconFile(modelId: string, file: string): string {
+  const normalized = file.replace(/\\/g, "/");
+  const parts = normalized.split("/images/");
+  const relative = parts.length > 1 ? parts[parts.length - 1] : normalized.split("/").pop() ?? normalized;
+  return `/models/${modelId}/images/${relative}`;
+}
+
+function mapIcons(
+  imageList: { image: { $: { name: string; file: string } }[] },
+  modelId: string,
+): IconDefinition[] {
   return imageList.image.map((image) => ({
     id: image.$.name,
-    file: image.$.file,
+    file: normalizeIconFile(modelId, image.$.file),
   }));
 }
 
@@ -165,6 +176,10 @@ export async function transformModel(options: ModelTransformOptions): Promise<Mo
   const dryRun = options.dryRun ?? false;
   const modelPath = join(options.sourcePath, options.language, options.modelId);
   const xmlPath = await resolveModelXmlPath(modelPath);
+
+  const modelImagesSource = join(modelPath, "images");
+  const modelImagesOutput = join(options.outputPath, "models", options.modelId, "images");
+  await copyModelImages(modelImagesSource, modelImagesOutput, dryRun);
 
   const tree = await parseModelTree(xmlPath);
   const context: TransformContext = {
@@ -183,7 +198,7 @@ export async function transformModel(options: ModelTransformOptions): Promise<Mo
     modelId: options.modelId,
     language: options.language,
     generated: new Date().toISOString(),
-    icons: mapIcons(tree.imageList),
+    icons: mapIcons(tree.imageList, options.modelId),
     tree: rootNode,
   };
 

@@ -25,6 +25,7 @@ const sampleHtml = `<?xml version="1.0" encoding="utf-8"?>
 <body>
   <h1>Test module, data transfer</h1>
   <p>Before carrying out this test module<br/>make sure it works.</p>
+  <img src="../../zi_images/G_183097.png" border="1" alt="G_183097" />
   <h2 class="chapter">Preconditions</h2>
   <h2 class="chapter">Test procedure</h2>
 </body>
@@ -38,6 +39,7 @@ describe("html-processor", () => {
     expect(metadata.title).toBe("Test module, data transfer");
     expect(metadata.heading).toBe("Test module, data transfer");
     expect(metadata.sections).toEqual(["Preconditions", "Test procedure"]);
+    expect(metadata.images).toEqual(["/zi_images/G_183097.png"]);
     expect(metadata.meta.Author).toBe("BMW AG");
   });
 
@@ -60,11 +62,13 @@ describe("html-processor", () => {
     expect(markdown).toContain("# Test module, data transfer");
     expect(markdown).toContain("## Preconditions");
     expect(markdown).toContain("make sure it works.");
+    expect(markdown).toContain("/zi_images/G_183097.png");
   });
 
   it("parses html end-to-end", () => {
     const result = parseHtml(sampleHtml);
     expect(result.metadata.sections.length).toBe(2);
+    expect(result.metadata.images).toEqual(["/zi_images/G_183097.png"]);
     expect(result.markdown).toContain("# Test module, data transfer");
   });
 
@@ -78,6 +82,8 @@ describe("html-processor", () => {
 
     const output = await readFile(outputPath, "utf-8");
     expect(output).toContain("# Test module, data transfer");
+    expect(output).toContain("/zi_images/G_183097.png");
     expect(metadata.sections).toEqual(["Preconditions", "Test procedure"]);
+    expect(metadata.images).toEqual(["/zi_images/G_183097.png"]);
   });
 });

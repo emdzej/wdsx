@@ -6,6 +6,7 @@ export interface HtmlMetadata {
   title?: string;
   heading?: string;
   sections: string[];
+  images: string[];
   meta: Record<string, string>;
 }
 
@@ -19,6 +20,30 @@ export function extractSections(document: Document): string[] {
   return Array.from(document.querySelectorAll("h2.chapter"))
     .map((node) => normalizeText(node.textContent))
     .filter((section): section is string => Boolean(section));
+}
+
+function normalizeImageSrc(value: string): string {
+  const normalized = value.replace(/\\/g, "/");
+  const match = normalized.match(/(?:^|\/)zi_images\/(.+)$/i);
+  if (match) {
+    return `/zi_images/${match[1]}`;
+  }
+  return normalized;
+}
+
+export function rewriteImageSources(document: Document): string[] {
+  const images: string[] = [];
+  const nodes = Array.from(document.querySelectorAll("img"));
+  for (const node of nodes) {
+    const src = node.getAttribute("src");
+    if (!src) continue;
+    const rewritten = normalizeImageSrc(src);
+    if (rewritten !== src) {
+      node.setAttribute("src", rewritten);
+    }
+    images.push(rewritten);
+  }
+  return images;
 }
 
 export function extractMetadata(document: Document): HtmlMetadata {
@@ -35,20 +60,24 @@ export function extractMetadata(document: Document): HtmlMetadata {
     title: normalizeText(document.querySelector("title")?.textContent),
     heading: normalizeText(document.querySelector("h1")?.textContent),
     sections: extractSections(document),
+    images: rewriteImageSources(document),
     meta,
   };
 }
 
-export function cleanHtml(html: string): string {
-  const dom = new JSDOM(html);
-  const { document } = dom.window;
-
+function cleanDocument(document: Document): string {
   const body = document.body;
   if (!body) return "";
 
   body.querySelectorAll("script, style, link, meta, noscript").forEach((node) => node.remove());
 
   return body.innerHTML.trim();
+}
+
+export function cleanHtml(html: string): string {
+  const dom = new JSDOM(html);
+  const { document } = dom.window;
+  return cleanDocument(document);
 }
 
 export function convertHtmlToMarkdown(html: string): string {
@@ -72,7 +101,7 @@ export function parseHtml(html: string): { metadata: HtmlMetadata; bodyHtml: str
   const { document } = dom.window;
 
   const metadata = extractMetadata(document);
-  const bodyHtml = cleanHtml(html);
+  const bodyHtml = cleanDocument(document);
   const markdown = convertHtmlToMarkdown(bodyHtml);
 
   return { metadata, bodyHtml, markdown };

@@ -42,14 +42,17 @@ describe("model-transformer", () => {
     const outputPath = join(tempDir, "data");
 
     const modelDir = join(sourcePath, "us", "testmodel", "tree");
+    const modelImagesDir = join(sourcePath, "us", "testmodel", "images");
     const svgDir = join(sourcePath, "us", "svg", "sp");
     const infoDir = join(sourcePath, "us", "zinfo");
 
     await mkdir(modelDir, { recursive: true });
+    await mkdir(modelImagesDir, { recursive: true });
     await mkdir(svgDir, { recursive: true });
     await mkdir(infoDir, { recursive: true });
 
     await writeFile(join(modelDir, "tree.xml"), sampleXml, "utf-8");
+    await writeFile(join(modelImagesDir, "icon_schem.gif"), "icon", "utf-8");
     await writeFile(join(svgDir, "SP0001.svgz"), gzipSync(sampleSvg));
     await writeFile(join(infoDir, "SINFO123.htm"), sampleHtml, "utf-8");
 
@@ -63,10 +66,17 @@ describe("model-transformer", () => {
     const modelJson = await readFile(join(outputPath, "models", "testmodel.json"), "utf-8");
     const diagramSvg = await readFile(join(outputPath, "diagrams", "SP0001.svg"), "utf-8");
     const infoMd = await readFile(join(outputPath, "info", "INFO123.md"), "utf-8");
+    const copiedIcon = await readFile(
+      join(outputPath, "models", "testmodel", "images", "icon_schem.gif"),
+      "utf-8",
+    );
 
-    expect(JSON.parse(modelJson).model).toBe("E60");
+    const parsedModel = JSON.parse(modelJson) as { model: string; icons: { file: string }[] };
+    expect(parsedModel.model).toBe("E60");
+    expect(parsedModel.icons[0]?.file).toBe("/models/testmodel/images/icon_schem.gif");
     expect(diagramSvg).toContain("javascript:search('X13020');");
     expect(infoMd).toContain("# Info Title");
+    expect(copiedIcon).toBe("icon");
     expect(result.diagramCount).toBe(1);
     expect(result.infoCount).toBe(1);
   });

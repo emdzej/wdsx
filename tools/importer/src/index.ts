@@ -16,6 +16,7 @@ import { join } from "node:path";
 import { defaultConfig, type Config, AVAILABLE_MODELS } from "./config.js";
 import { transformModel, type ModelTransformResult } from "./transformers/model-transformer.js";
 import { writeIndexes } from "./builders/index-builder.js";
+import { copySharedImages, copyZiImages } from "./processors/image-processor.js";
 
 interface ImportCliOptions {
   models?: string;
@@ -72,6 +73,13 @@ async function runImport(options: ImportCliOptions): Promise<void> {
   validateModels(models);
 
   printHeader(config, models);
+
+  if (!config.dryRun) {
+    console.log(chalk.cyan("📷 Copying shared images..."));
+    await copySharedImages(join(config.sourcePath, config.language), config.outputPath, config.dryRun);
+    console.log(chalk.cyan("📷 Copying info page images..."));
+    await copyZiImages(config.sourcePath, config.outputPath, config.dryRun);
+  }
 
   const results: ModelTransformResult[] = [];
   const failures: { model: string; error: Error }[] = [];
