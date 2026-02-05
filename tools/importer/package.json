@@ -8,6 +8,7 @@
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "import": "tsx src/index.ts import",
+    "import:dry": "tsx src/index.ts import --dry-run",
     "validate": "tsx src/index.ts validate",
     "stats": "tsx src/index.ts stats",
     "test": "vitest",
