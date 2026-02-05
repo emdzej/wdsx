@@ -2,12 +2,13 @@
 	import { browser } from '$app/environment';
 	import { createEventDispatcher, onDestroy, onMount, tick } from 'svelte';
 	import panzoom from 'panzoom';
+	import { extractComponentIds } from '$lib/utils/svg-components';
 
 	export let src: string;
 	export let height = 'calc(100vh - 12rem)';
 	export let dark = true;
 
-	const dispatch = createEventDispatcher<{ search: { id: string } }>();
+	const dispatch = createEventDispatcher<{ search: { id: string }; components: { ids: string[] } }>();
 
 	let container: HTMLDivElement;
 	let viewport: HTMLDivElement;
@@ -31,6 +32,7 @@
 				throw new Error(`Failed to load diagram (${response.status})`);
 			}
 			svgMarkup = await response.text();
+			dispatch('components', { ids: extractComponentIds(svgMarkup) });
 			await tick();
 			initializePanzoom();
 		} catch (err) {
