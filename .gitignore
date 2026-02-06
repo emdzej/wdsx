@@ -19,6 +19,9 @@ source-data/
 !apps/viewer/static/data/
 !apps/viewer/static/data/.gitkeep
 
+# Allow favicon.svg
+!apps/viewer/src/lib/assets/favicon.svg
+
 # Environment
 .env
 .env.local
