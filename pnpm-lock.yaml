@@ -109,6 +109,9 @@ importers:
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.32
+      '@types/turndown':
+        specifier: ^5.0.6
+        version: 5.0.6
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.0.0
         version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
@@ -850,6 +853,9 @@ packages:
 
   '@types/tough-cookie@4.0.5':
     resolution: {integrity: sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==}
+
+  '@types/turndown@5.0.6':
+    resolution: {integrity: sha512-ru00MoyeeouE5BX4gRL+6m/BsDfbRayOskWqUvh7CLGW+UXxHQItqALa38kKnOiZPqJrtzJUgAC2+F0rL1S4Pg==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -2768,6 +2774,8 @@ snapshots:
   '@types/semver@7.7.1': {}
 
   '@types/tough-cookie@4.0.5': {}
+
+  '@types/turndown@5.0.6': {}
 
   '@types/unist@2.0.11': {}
 
