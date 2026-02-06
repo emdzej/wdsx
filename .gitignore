@@ -15,6 +15,10 @@ source-data/
 *.svg
 /release/
 
+# Allow empty viewer static data directory in repo
+!apps/viewer/static/data/
+!apps/viewer/static/data/.gitkeep
+
 # Environment
 .env
 .env.local
