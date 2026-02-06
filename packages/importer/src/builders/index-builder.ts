@@ -11,7 +11,7 @@ import type {
   ModelReference,
   ModelTree,
   TreeNode,
-} from "../types/target.js";
+} from "@emdzej/wds-core";
 
 const DEFAULT_VERSION = "1.0.0";
 
