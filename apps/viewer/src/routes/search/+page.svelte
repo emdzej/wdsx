@@ -39,7 +39,7 @@
 		return model ? `/${model}/${result.type}/${result.id}` : '#';
 	};
 
-	$: query = $page.url.searchParams.get('q') ?? '';
+	$: query = browser ? $page.url.searchParams.get('q') ?? '' : '';
 
 	$: if (browser && query.trim()) {
 		loading = true;
@@ -69,10 +69,14 @@
 
 	<div class="flex flex-wrap items-center gap-4">
 		<div class="min-w-[160px]">
-			<label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+			<label
+				for="type-filter"
+				class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+			>
 				Type
 			</label>
 			<select
+				id="type-filter"
 				bind:value={typeFilter}
 				class="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
 			>
@@ -82,10 +86,14 @@
 			</select>
 		</div>
 		<div class="min-w-[200px]">
-			<label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+			<label
+				for="model-filter"
+				class="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+			>
 				Model
 			</label>
 			<select
+				id="model-filter"
 				bind:value={modelFilter}
 				class="mt-1 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
 			>

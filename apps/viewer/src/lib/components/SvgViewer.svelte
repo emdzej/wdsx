@@ -92,7 +92,7 @@
 		}
 	}
 
-	function handleClick(event: MouseEvent) {
+	function handleActivate(event: Event) {
 		const target = event.target as Element | null;
 		const link = target?.closest('a');
 		if (!link) return;
@@ -104,6 +104,15 @@
 			event.stopPropagation();
 			dispatch('search', { id: match[1] });
 		}
+	}
+
+	function handleClick(event: MouseEvent) {
+		handleActivate(event);
+	}
+
+	function handleViewportKeydown(event: KeyboardEvent) {
+		if (event.key !== 'Enter' && event.key !== ' ') return;
+		handleActivate(event);
 	}
 
 	function handleKeyDown(event: KeyboardEvent) {
@@ -204,6 +213,10 @@
 		} shadow-inner`}
 		bind:this={viewport}
 		on:click={handleClick}
+		on:keydown={handleViewportKeydown}
+		role="button"
+		aria-label="Diagram viewport"
+		tabindex="0"
 	>
 		{#if loading}
 			<div class="flex h-full items-center justify-center">
