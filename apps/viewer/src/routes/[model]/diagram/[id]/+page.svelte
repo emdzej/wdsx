@@ -42,8 +42,8 @@
 	<Breadcrumb
 		items={[
 			{ label: 'Models', href: '/' },
-			{ label: $page.params.model, href: `/${$page.params.model}` },
-			{ label: $page.params.id }
+			{ label: $page.params.model ?? '', href: `/${$page.params.model}` },
+			{ label: $page.params.id ?? '' }
 		]}
 	/>
 
@@ -91,7 +91,7 @@
 						<li>
 							<a
 								class="block rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 transition hover:border-blue-200 hover:bg-blue-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-800"
-								href={`/${info.models.includes($page.params.model) ? $page.params.model : info.models[0] ?? $page.params.model}/info/${info.id}`}
+								href={`/${info.models.includes($page.params.model ?? '') ? $page.params.model : info.models[0] ?? $page.params.model}/info/${info.id}`}
 							>
 								<div class="font-semibold">{info.id}</div>
 								<div class="text-xs text-slate-500 dark:text-slate-400">{info.title}</div>

@@ -1,8 +1,7 @@
 <script lang="ts" context="module">
-	import type { PageLoad } from './$types';
 	import { error } from '@sveltejs/kit';
 
-	export const load: PageLoad = async ({ fetch, params }) => {
+	export const load = async ({ fetch, params }: { fetch: typeof globalThis.fetch; params: Record<string, string> }) => {
 		const response = await fetch(`/data/info/${params.id}.md`);
 		if (!response.ok) {
 			throw error(404, `Info document ${params.id} not found`);
@@ -44,9 +43,9 @@
 	<Breadcrumb
 		items={[
 			{ label: 'Models', href: '/' },
-			{ label: $page.params.model, href: `/${$page.params.model}` },
+			{ label: $page.params.model ?? '', href: `/${$page.params.model}` },
 			{ label: 'Info' },
-			{ label: $page.params.id }
+			{ label: $page.params.id ?? '' }
 		]}
 	/>
 
@@ -80,7 +79,7 @@
 				</div>
 				<a
 					class="text-xs font-medium text-blue-600 transition hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:text-blue-300"
-					href={`/search?q=${encodeURIComponent($page.params.id)}`}
+					href={`/search?q=${encodeURIComponent($page.params.id ?? '')}`}
 				>
 					Search all
 				</a>
@@ -99,7 +98,7 @@
 						<li>
 							<a
 								class="block rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 transition hover:border-blue-200 hover:bg-blue-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-800"
-								href={`/${diagram.models.includes($page.params.model) ? $page.params.model : diagram.models[0] ?? $page.params.model}/diagram/${diagram.id}`}
+								href={`/${diagram.models.includes($page.params.model ?? '') ? $page.params.model : diagram.models[0] ?? $page.params.model}/diagram/${diagram.id}`}
 							>
 								<div class="font-semibold">{diagram.id}</div>
 								<div class="text-xs text-slate-500 dark:text-slate-400">
