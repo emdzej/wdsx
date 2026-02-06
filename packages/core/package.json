@@ -7,7 +7,9 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "lint": "echo 'no lint'",
+    "test": "echo 'no tests'"
   },
   "devDependencies": {
     "typescript": "^5.3.0"
