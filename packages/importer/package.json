@@ -8,7 +8,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc -b",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc --noEmit",
     "dev": "tsx src/index.ts",
     "import": "tsx src/index.ts import",
     "import:dry": "tsx src/index.ts import --dry-run",

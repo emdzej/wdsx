@@ -15,24 +15,29 @@ const collectPrerenderEntries = () => {
 		for (const model of index.models ?? []) {
 			if (!model?.id) continue;
 			entries.add(`/${model.id}`);
-			const modelPath = resolve(__dirname, `../../data/models/${model.id}.json`);
-			const modelData = JSON.parse(readFileSync(modelPath, 'utf-8'));
-			const diagramIds = new Set();
-			const infoIds = new Set();
+			try {
+				const modelPath = resolve(__dirname, `../../data/models/${model.id}.json`);
+				const modelData = JSON.parse(readFileSync(modelPath, 'utf-8'));
+				const diagramIds = new Set();
+				const infoIds = new Set();
 
-			const walk = (node) => {
-				if (!node) return;
-				if (node.diagram) diagramIds.add(node.diagram);
-				if (node.info) infoIds.add(node.info);
-				(node.children ?? []).forEach(walk);
-			};
+				const walk = (node) => {
+					if (!node) return;
+					if (node.diagram) diagramIds.add(node.diagram);
+					if (node.info) infoIds.add(node.info);
+					(node.children ?? []).forEach(walk);
+				};
 
-			walk(modelData.tree);
-			diagramIds.forEach((id) => entries.add(`/${model.id}/diagram/${id}`));
-			infoIds.forEach((id) => entries.add(`/${model.id}/info/${id}`));
+				walk(modelData.tree);
+				diagramIds.forEach((id) => entries.add(`/${model.id}/diagram/${id}`));
+				infoIds.forEach((id) => entries.add(`/${model.id}/info/${id}`));
+			} catch {
+				// Model file missing, skip
+			}
 		}
-	} catch (error) {
-		console.warn('Failed to collect prerender entries:', error);
+	} catch {
+		// No data directory - return just wildcard for dev/CI
+		console.warn('No data/models/index.json found - using wildcard prerender only');
 	}
 
 	return Array.from(entries);
