@@ -17,6 +17,18 @@ Converts BMW WDS XML/SVG/HTML data into a web-viewable format.
 
 ---
 
+## Tech Guidelines
+
+When working with specific technologies, load the relevant guide:
+
+| Technology | Guide                                                            | When to load                     |
+| ---------- | ---------------------------------------------------------------- | -------------------------------- |
+| TypeScript | [`docs/guidelines/typescript.md`](docs/guidelines/typescript.md) | Types, const objects, binary ops |
+
+**Rule:** Load the relevant guide(s) before starting work in that area.
+
+---
+
 ## Package Structure (target after #28)
 
 ```
