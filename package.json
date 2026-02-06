@@ -4,11 +4,7 @@
   "private": true,
   "packageManager": "pnpm@9.12.2",
   "description": "Modern web application port of the legacy BMW WDS (Wiring Diagram System) Java applet.",
-  "type": "module",
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+  "type": "module",  
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
