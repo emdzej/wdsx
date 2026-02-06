@@ -5,7 +5,7 @@ import { processSvgzFile } from "../processors/svg-processor.js";
 import { processHtmlFile } from "../processors/html-processor.js";
 import { copyModelImages } from "../processors/image-processor.js";
 import type { SourceFolder, SourceLeaf, SourceRoot } from "../types/source.js";
-import type { ModelTree, TreeNode, IconDefinition } from "../types/target.js";
+import type { ModelTree, TreeNode, IconDefinition } from "@emdzej/wds-core";
 
 export interface ModelTransformOptions {
   modelId: string;

@@ -4,8 +4,11 @@
   "description": "BMW WDS data import and transformation tool",
   "type": "module",
   "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -b",
+    "typecheck": "tsc -b --noEmit",
     "dev": "tsx src/index.ts",
     "import": "tsx src/index.ts import",
     "import:dry": "tsx src/index.ts import --dry-run",
@@ -25,6 +28,7 @@
   "author": "emdzej",
   "license": "UNLICENSED",
   "dependencies": {
+    "@emdzej/wds-core": "workspace:*",
     "chalk": "^5.3.0",
     "commander": "^11.0.0",
     "fast-xml-parser": "^4.3.0",

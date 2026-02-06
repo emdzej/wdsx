@@ -13,7 +13,7 @@ WDS is BMW's classic wiring diagram system that originally ran as Java applets i
 ## Source Data
 
 - **Format**: Legacy Java applet data structure
-- **Content**: 
+- **Content**:
   - ~24,000 SVGZ wiring diagrams
   - ~20,000 HTML information pages
   - 14 XML tree structure files
@@ -23,23 +23,43 @@ WDS is BMW's classic wiring diagram system that originally ran as Java applets i
 ## Tech Stack
 
 - **Language**: TypeScript
-- **Import Tool**: Node.js-based data transformation pipeline
+- **Monorepo**: pnpm + Turborepo
+- **Importer**: Node.js-based data transformation pipeline
+- **Viewer**: SvelteKit (planned)
 - **Target Format**: JSON + optimized SVG + Markdown
 
 ## Repository Structure
 
 ```
 wds/
-├── docs/              # Documentation and analysis
-├── tools/             # Import and transformation tools
-│   └── importer/      # Data import tool (TypeScript)
-├── data/              # Processed data (gitignored, generated)
-└── viewer/            # Web viewer application (future)
+├── apps/
+│   └── viewer/           # SvelteKit viewer application
+├── packages/
+│   ├── core/             # Shared types and utilities
+│   └── importer/         # Data import tool (TypeScript)
+├── tools/                # Scripts and utilities
+├── data/                 # Processed data (gitignored, generated)
+└── docs/                 # Documentation and analysis
 ```
 
 ## Development
 
-See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and development instructions.
+```bash
+pnpm install
+pnpm build
+pnpm test
+pnpm lint
+pnpm typecheck
+```
+
+### Importer Commands
+
+```bash
+pnpm import
+pnpm import:dry
+pnpm validate
+pnpm stats
+```
 
 ## License
 

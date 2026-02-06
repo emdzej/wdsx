@@ -6,105 +6,101 @@
 // Models
 // ============================================================================
 
-export interface ModelsIndex {
+export type ModelsIndex = {
   version: string;
   generated: string;
   sourceLanguage: string;
   models: ModelMeta[];
-}
+};
 
-export interface ModelMeta {
+export type ModelMeta = {
   id: string;
   name: string;
   file: string;
   treeSize: number;
   diagramCount: number;
   infoCount: number;
-}
+};
 
-export interface ModelTree {
+export type ModelTree = {
   model: string;
   modelId: string;
   language: string;
   generated: string;
   icons: IconDefinition[];
   tree: TreeNode;
-}
+};
 
-export interface IconDefinition {
+export type IconDefinition = {
   id: string;
   file: string;
   description?: string;
-}
+};
 
-export interface TreeNode {
+export type TreeNode = {
   type: "folder" | "leaf";
   name: string;
   id: string;
-  
-  // Folder-specific
   children?: TreeNode[];
-  
-  // Leaf-specific
   icon?: string;
   diagram?: string;
   info?: string;
-}
+};
 
 // ============================================================================
 // Diagrams
 // ============================================================================
 
-export interface DiagramsIndex {
+export type DiagramsIndex = {
   version: string;
   generated: string;
   diagrams: DiagramMeta[];
-}
+};
 
-export interface DiagramMeta {
+export type DiagramMeta = {
   id: string;
   file: string;
   title?: string;
   viewBox?: string;
   referencedBy: ModelReference[];
-}
+};
 
-export interface SvgMetadata {
+export type SvgMetadata = {
   title?: string;
   viewBox?: string;
-}
+};
 
 // ============================================================================
 // Info Pages
 // ============================================================================
 
-export interface InfoIndex {
+export type InfoIndex = {
   version: string;
   generated: string;
   pages: InfoPageMeta[];
-}
+};
 
-export interface InfoPageMeta {
+export type InfoPageMeta = {
   id: string;
   title: string;
   htmlFile: string;
   mdFile?: string;
   sections: string[];
   referencedBy: ModelReference[];
-}
+};
 
 // ============================================================================
 // Images
 // ============================================================================
 
-export interface ImagesIndex {
+export type ImagesIndex = {
   version: string;
   generated: string;
   totalSize: number;
   images: ImageMeta[];
-}
+};
 
-export interface ImageMeta {
+export type ImageMeta = {
   id: string;
   file: string;
   size: number;
@@ -113,22 +109,22 @@ export interface ImageMeta {
     height: number;
   };
   referencedBy: string[];
-}
+};
 
 // ============================================================================
 // Common
 // ============================================================================
 
-export interface ModelReference {
+export type ModelReference = {
   model: string;
   occurrences: number;
-}
+};
 
 // ============================================================================
 // Processing State
 // ============================================================================
 
-export interface ProcessingState {
+export type ProcessingState = {
   totalModels: number;
   processedModels: number;
   totalDiagrams: number;
@@ -136,11 +132,11 @@ export interface ProcessingState {
   totalInfoPages: number;
   processedInfoPages: number;
   errors: ProcessingError[];
-}
+};
 
-export interface ProcessingError {
+export type ProcessingError = {
   type: "xml" | "svg" | "html" | "validation" | "io";
   file: string;
   message: string;
   timestamp: string;
-}
+};
