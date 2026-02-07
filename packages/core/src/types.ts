@@ -120,6 +120,32 @@ export type ModelReference = {
   occurrences: number;
 };
 
+
+// ============================================================================
+// Components
+// ============================================================================
+
+export type ComponentsIndex = {
+  version: string;
+  generated: string;
+  components: ComponentMeta[];
+};
+
+export type ComponentMeta = {
+  id: string;
+  title?: string;
+  description?: string;
+  diagrams?: string[];
+  occurrences?: ComponentOccurrence[];
+};
+
+export type ComponentOccurrence = {
+  diagramId?: string;
+  diagram?: string;
+  model?: string;
+  occurrences?: number;
+};
+
 // ============================================================================
 // Processing State
 // ============================================================================

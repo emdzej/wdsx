@@ -77,7 +77,7 @@
 		if (href.startsWith('javascript:')) {
 			const searchId = parseSearchLink(href);
 			if (searchId) {
-				void goto(resolve(`/diagrams?search=${encodeURIComponent(searchId)}`));
+				void goto(resolve(`/search?component=${encodeURIComponent(searchId)}`));
 				return;
 			}
 		}
