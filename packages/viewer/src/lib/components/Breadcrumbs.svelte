@@ -5,7 +5,7 @@
 	const formatSegment = (segment: string) =>
 		segment.replace(/[-_]/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 
-	const toPathname = (path: string) => path as Parameters<typeof resolve>[0];
+	const toPathname = (path: string) => path as App.Pathname;
 
 	$: segments = $page.url.pathname.split('/').filter(Boolean);
 	$: crumbs = segments.map((segment, index) => ({

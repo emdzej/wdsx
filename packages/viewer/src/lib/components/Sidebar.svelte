@@ -10,7 +10,7 @@
 		{ label: 'Info Pages', href: '/info' }
 	];
 
-	const toPathname = (path: string) => path as Parameters<typeof resolve>[0];
+	const toPathname = (path: string) => path as App.Pathname;
 </script>
 
 <button

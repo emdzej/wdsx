@@ -10,7 +10,16 @@ const config = {
 	extensions: ['.svelte', '.md'],
 	preprocess: [mdsvex(mdsvexOptions)],
 	kit: {
-		adapter: adapter()
+		adapter: adapter(),
+		prerender: {
+			handleHttpError: ({ status, path }) => {
+				if (status === 404 && path.startsWith('/data/')) {
+					return;
+				}
+				throw new Error(`Prerender request failed with ${status} for ${path}`);
+			},
+			handleUnseenRoutes: 'ignore'
+		}
 	}
 };
 
