@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { onDestroy, onMount, tick } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import panzoom from 'panzoom';
 	import type { DiagramMeta, DiagramsIndex } from '@emdzej/wds-core';
 
@@ -15,6 +16,9 @@
 	let svgElement: SVGSVGElement | null = null;
 	let panzoomInstance: ReturnType<typeof panzoom> | null = null;
 	let loadCounter = 0;
+	let activePointers = new SvelteMap<number, { x: number; y: number }>();
+	let pinchStartDistance = 0;
+	let pinchStartZoom = 1;
 
 	const diagramId = $derived($page.params.id ?? '');
 	const modelId = $derived($page.params.model ?? '');
@@ -28,6 +32,14 @@
 		const match = href.match(/([A-Za-z0-9_-]+)\.svgz?$/i);
 		return match?.[1] ?? null;
 	};
+
+	const distance = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+		Math.hypot(a.x - b.x, a.y - b.y);
+
+	const center = (a: { x: number; y: number }, b: { x: number; y: number }) => ({
+		x: (a.x + b.x) / 2,
+		y: (a.y + b.y) / 2
+	});
 
 	const fetchSvgMarkup = async (file: string): Promise<string> => {
 		const response = await fetch(`/data/diagrams/${file}`);
@@ -106,6 +118,41 @@
 		const link = target?.closest('a');
 		if (!link) return;
 		link.classList.remove('wds-link-hover');
+	};
+
+	const handleTouchPointerDown = (event: PointerEvent) => {
+		if (event.pointerType !== 'touch') return;
+		if (!svgHost) return;
+		svgHost.setPointerCapture(event.pointerId);
+		activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+		if (activePointers.size === 2) {
+			const [first, second] = Array.from(activePointers.values());
+			pinchStartDistance = distance(first, second);
+			pinchStartZoom = panzoomInstance?.getTransform().scale ?? 1;
+		}
+	};
+
+	const handleTouchPointerMove = (event: PointerEvent) => {
+		if (event.pointerType !== 'touch') return;
+		if (!activePointers.has(event.pointerId)) return;
+		activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+		if (activePointers.size !== 2 || !panzoomInstance || !svgHost || pinchStartDistance === 0) {
+			return;
+		}
+		const [first, second] = Array.from(activePointers.values());
+		const newDistance = distance(first, second);
+		const zoom = pinchStartZoom * (newDistance / pinchStartDistance);
+		const rect = svgHost.getBoundingClientRect();
+		const focus = center(first, second);
+		panzoomInstance.zoomAbs(focus.x - rect.left, focus.y - rect.top, zoom);
+	};
+
+	const handleTouchPointerUp = (event: PointerEvent) => {
+		if (event.pointerType !== 'touch') return;
+		activePointers.delete(event.pointerId);
+		if (activePointers.size < 2) {
+			pinchStartDistance = 0;
+		}
 	};
 
 	const attachSvgInteractions = (svg: SVGSVGElement) => {
@@ -193,6 +240,23 @@
 	};
 
 	$effect(() => {
+		if (!svgHost) return;
+		const host = svgHost;
+		host.addEventListener('pointerdown', handleTouchPointerDown);
+		host.addEventListener('pointermove', handleTouchPointerMove);
+		host.addEventListener('pointerup', handleTouchPointerUp);
+		host.addEventListener('pointercancel', handleTouchPointerUp);
+		host.addEventListener('pointerleave', handleTouchPointerUp);
+		return () => {
+			host.removeEventListener('pointerdown', handleTouchPointerDown);
+			host.removeEventListener('pointermove', handleTouchPointerMove);
+			host.removeEventListener('pointerup', handleTouchPointerUp);
+			host.removeEventListener('pointercancel', handleTouchPointerUp);
+			host.removeEventListener('pointerleave', handleTouchPointerUp);
+		};
+	});
+
+	$effect(() => {
 		if (!diagramId) return;
 		void loadDiagram(diagramId);
 	});
@@ -209,7 +273,7 @@
 </script>
 
 <section class="space-y-4">
-	<div class="flex flex-wrap items-center justify-between gap-3">
+	<div class="flex flex-wrap items-center justify-between gap-3 wds-no-print">
 		<div>
 			<p class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
 				Diagram
@@ -255,11 +319,16 @@
 
 	<div
 		bind:this={svgHost}
-		class="relative h-[calc(100vh-12rem)] min-h-[520px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+		class="relative h-[calc(100vh-12rem)] min-h-[520px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 touch-none wds-diagram-container wds-diagram-canvas"
 	>
 		{#if loading}
-			<div class="flex h-full items-center justify-center text-slate-500 dark:text-slate-400">
-				Loading diagram…
+			<div class="flex h-full flex-col items-center justify-center gap-4 px-6">
+				<div class="skeleton h-40 w-40 rounded-full"></div>
+				<div class="w-full max-w-md space-y-3">
+					<div class="skeleton-line w-1/2"></div>
+					<div class="skeleton-line"></div>
+					<div class="skeleton-line w-5/6"></div>
+				</div>
 			</div>
 		{:else if error}
 			<div class="flex h-full items-center justify-center text-sm text-rose-500">
