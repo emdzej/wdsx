@@ -63,7 +63,10 @@ describe("model-transformer", () => {
       language: "us",
     });
 
-    const modelJson = await readFile(join(outputPath, "models", "testmodel.json"), "utf-8");
+    const modelJson = await readFile(
+      join(outputPath, "models", "testmodel", "tree.json"),
+      "utf-8",
+    );
     const diagramSvg = await readFile(join(outputPath, "diagrams", "SP0001.svg"), "utf-8");
     const infoMd = await readFile(join(outputPath, "info", "INFO123.md"), "utf-8");
     const copiedIcon = await readFile(

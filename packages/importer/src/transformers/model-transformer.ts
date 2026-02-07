@@ -202,8 +202,8 @@ export async function transformModel(options: ModelTransformOptions): Promise<Mo
     tree: rootNode,
   };
 
-  const outputDir = join(options.outputPath, "models");
-  const outputPath = join(outputDir, `${options.modelId}.json`);
+  const outputDir = join(options.outputPath, "models", options.modelId);
+  const outputPath = join(outputDir, "tree.json");
 
   await ensureDir(outputDir, dryRun);
   if (!dryRun) {
