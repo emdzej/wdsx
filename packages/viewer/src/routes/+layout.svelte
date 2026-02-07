@@ -2,7 +2,7 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import favicon from '$lib/assets/favicon.svg';
-	import { loadModelsIndex } from '$lib/data';
+	import { loadModelsIndex } from '$lib/data/loaders';
 	import type { ModelMeta } from '@emdzej/wds-core';
 	import Header from '$lib/components/Header.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
