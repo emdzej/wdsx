@@ -21,6 +21,7 @@ source-data/
 
 # Allow favicon.svg
 !apps/viewer/src/lib/assets/favicon.svg
+!packages/viewer/src/lib/assets/favicon.svg
 
 # Environment
 .env
