@@ -7,7 +7,7 @@
 
 	let { data } = $props<{ data: { treePromise: Promise<ModelTree> } }>();
 
-	let expandedIds = $state(new SvelteSet<string>());
+	let expandedIds = new SvelteSet<string>();
 	let loadedModelId: string | null = null;
 	let mobileTreeOpen = $state(false);
 
