@@ -15,7 +15,8 @@
 		"format": "prettier --write ."
 	},
 	"dependencies": {
-		"@emdzej/wds-core": "workspace:*"
+		"@emdzej/wds-core": "workspace:*",
+		"panzoom": "^9.4.3"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",
