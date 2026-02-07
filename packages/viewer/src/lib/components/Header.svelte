@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { ModelMeta } from '@emdzej/wds-core';
+	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/stores';
 	import DarkModeToggle from './DarkModeToggle.svelte';
+	import SearchInput from './SearchInput.svelte';
 
 	let {
 		models = [],
@@ -11,6 +16,18 @@
 		selectedModelId?: string;
 		onToggleSidebar?: () => void;
 	}>();
+
+	const pageQuery = $derived(
+		browser ? $page.url.searchParams.get('q') ?? '' : ''
+	);
+
+	const toPathname = (path: string) => path as App.Pathname;
+
+	const handleSearch = (query: string) => {
+		const trimmed = query.trim();
+		const target = trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : '/search';
+		void goto(resolve(toPathname(target)));
+	};
 </script>
 
 <header
@@ -43,7 +60,13 @@
 				<h1 class="text-lg font-semibold text-slate-900 dark:text-white">Wiring Diagram System</h1>
 			</div>
 		</div>
-		<div class="flex flex-wrap items-center gap-3">
+		<div class="flex flex-1 flex-wrap items-center justify-end gap-3">
+			<SearchInput
+				class="w-full md:w-64 lg:w-80"
+				value={pageQuery}
+				placeholder="Search diagrams & info…"
+				onSearch={handleSearch}
+			/>
 			<label class="text-sm font-medium text-slate-500 dark:text-slate-400" for="model-select">
 				Model
 			</label>

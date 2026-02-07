@@ -87,6 +87,9 @@ importers:
       '@emdzej/wds-core':
         specifier: workspace:*
         version: link:../core
+      flexsearch:
+        specifier: ^0.8.212
+        version: 0.8.212
       panzoom:
         specifier: ^9.4.3
         version: 9.4.3
@@ -1395,6 +1398,9 @@ packages:
 
   flatted@3.3.3:
     resolution: {integrity: sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==}
+
+  flexsearch@0.8.212:
+    resolution: {integrity: sha512-wSyJr1GUWoOOIISRu+X2IXiOcVfg9qqBRyCPRUdLMIGJqPzMo+jMRlvE83t14v1j0dRMEaBbER/adQjp6Du2pw==}
 
   form-data@4.0.5:
     resolution: {integrity: sha512-8RipRLol37bNs2bhoV67fiTEvdTrbMUYcFTiy3+wuuOnUog2QBHCZWXDRijWQfAkhBj2Uf5UnVaiWwA5vdd82w==}
@@ -3759,6 +3765,8 @@ snapshots:
       keyv: 4.5.4
 
   flatted@3.3.3: {}
+
+  flexsearch@0.8.212: {}
 
   form-data@4.0.5:
     dependencies:
