@@ -8,8 +8,10 @@ node_modules
 /.svelte-kit
 /build
 
-# Data
+# Data (symlink to generated data, not source code)
 /data
+# But keep src/lib/data (TypeScript loaders)
+!src/lib/data/
 
 # OS
 .DS_Store
