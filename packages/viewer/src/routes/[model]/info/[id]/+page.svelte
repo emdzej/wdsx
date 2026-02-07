@@ -4,9 +4,17 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { compile as mdsvexCompile } from 'mdsvex';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { compile as svelteCompile } from 'svelte/compiler';
 	import type { ComponentType } from 'svelte';
-	import type { InfoIndex, InfoPageMeta } from '@emdzej/wds-core';
+	import type {
+		DiagramMeta,
+		DiagramsIndex,
+		InfoIndex,
+		InfoPageMeta,
+		ModelReference
+	} from '@emdzej/wds-core';
+	import { loadDiagramsIndex } from '$lib/data/loaders';
 
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -15,6 +23,18 @@
 	let MarkdownComponent = $state<ComponentType | null>(null);
 	let markdownHost = $state<HTMLDivElement | null>(null);
 	let loadCounter = 0;
+
+	const relatedDiagrams = $derived.by(() =>
+		relatedDiagramIds.map((id) => ({
+			id,
+			meta: getDiagramMeta(id),
+			references: relatedDiagramRefs.get(id) ?? []
+		}))
+	);
+
+	let diagramsIndex = $state<DiagramsIndex | null>(null);
+	let relatedDiagramIds = $state<string[]>([]);
+	let relatedDiagramRefs = $state<Map<string, ModelReference[]>>(new Map());
 
 	const infoId = $derived($page.params.id ?? '');
 	const modelId = $derived($page.params.model ?? '');
@@ -27,6 +47,36 @@
 			.replace(/[^a-z0-9]+/g, '-')
 			.replace(/(^-|-$)/g, '');
 	};
+
+	const extractDiagramIds = (markdown: string): string[] => {
+		const ids = new SvelteSet<string>();
+		const hrefRegex = /href=["']([^"']+)["']/gi;
+		const mdLinkRegex = /\]\(([^)]+)\)/g;
+		const svgRegex = /([A-Za-z0-9_-]+)\.svgz?/gi;
+		const fileRegex = /file=([A-Za-z0-9_-]+)\.htm/gi;
+		const consider = (value: string) => {
+			const diagram = parseDiagramLink(value);
+			if (diagram) {
+				ids.add(diagram);
+			}
+		};
+		for (const match of markdown.matchAll(hrefRegex)) {
+			consider(match[1]);
+		}
+		for (const match of markdown.matchAll(mdLinkRegex)) {
+			consider(match[1]);
+		}
+		for (const match of markdown.matchAll(svgRegex)) {
+			ids.add(match[1]);
+		}
+		for (const match of markdown.matchAll(fileRegex)) {
+			ids.add(match[1]);
+		}
+		return Array.from(ids);
+	};
+
+	const getDiagramMeta = (id: string): DiagramMeta | undefined =>
+		diagramsIndex?.diagrams.find((diagram) => diagram.id === id);
 
 	const normalizeImagePaths = (markdown: string): string => {
 		const withMarkdownImages = markdown.replace(
@@ -88,8 +138,10 @@
 	};
 
 	const parseDiagramLink = (href: string): string | null => {
-		const match = href.match(/([A-Za-z0-9_-]+)\.svgz?$/i);
-		return match?.[1] ?? null;
+		const fileMatch = href.match(/file=([A-Za-z0-9_-]+)\.htm/i);
+		if (fileMatch) return fileMatch[1];
+		const svgMatch = href.match(/([A-Za-z0-9_-]+)\.svgz?$/i);
+		return svgMatch?.[1] ?? null;
 	};
 
 	const handleMarkdownClick = (event: MouseEvent) => {
@@ -146,8 +198,19 @@
 			}
 			const markdown = normalizeImagePaths(await mdResponse.text());
 			if (currentLoad !== loadCounter) return;
+			if (!diagramsIndex) {
+				try {
+					diagramsIndex = await loadDiagramsIndex(fetch);
+				} catch (diagramError) {
+					console.warn('Failed to load diagrams index', diagramError);
+				}
+			}
 			const prepared = buildMarkdownWithAnchors(markdown);
 			sections = prepared.sections;
+			relatedDiagramIds = extractDiagramIds(markdown);
+			relatedDiagramRefs = new Map(
+				relatedDiagramIds.map((id) => [id, getDiagramMeta(id)?.referencedBy ?? []])
+			);
 			MarkdownComponent = await compileMarkdownComponent(prepared.content);
 		} catch (err) {
 			if (currentLoad !== loadCounter) return;
@@ -187,28 +250,72 @@
 	</div>
 
 	<div class="flex flex-col gap-8 lg:flex-row">
-		{#if sections.length}
-			<aside class="lg:w-64">
-				<div
-					class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900"
-				>
-					<p
-						class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+		{#if sections.length || relatedDiagrams.length}
+			<aside class="lg:w-64 space-y-4">
+				{#if relatedDiagrams.length}
+					<div
+						class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900"
 					>
-						Sections
-					</p>
-					<ul class="mt-3 space-y-2 text-slate-700 dark:text-slate-200">
-						{#each sections as section (section.id)}
-							<li
-								class={section.level === 3 ? 'pl-4 text-sm text-slate-600 dark:text-slate-300' : ''}
-							>
-								<a href={`#${section.id}`} class="hover:text-sky-500">
-									{section.title}
-								</a>
-							</li>
-						{/each}
-					</ul>
-				</div>
+						<p
+							class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+						>
+							Related diagrams
+						</p>
+						<ul class="mt-3 space-y-3 text-slate-700 dark:text-slate-200">
+							{#each relatedDiagrams as diagram (diagram.id)}
+								<li class="space-y-2">
+									<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+										{diagram.meta?.title ?? diagram.id}
+									</p>
+									<p class="text-xs text-slate-500 dark:text-slate-400">{diagram.id}</p>
+									{#if diagram.references.length}
+										<div class="flex flex-wrap gap-2">
+											{#each diagram.references as ref (ref.model)}
+												<a
+													href={resolve(`/${ref.model}/diagram/${diagram.id}`)}
+													class="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-400"
+												>
+													{ref.model} ({ref.occurrences})
+												</a>
+											{/each}
+										</div>
+									{:else}
+										<a
+											href={resolve(`/${modelId}/diagram/${diagram.id}`)}
+											class="text-xs font-medium text-slate-600 transition hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
+										>
+											Open diagram
+										</a>
+									{/if}
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
+				{#if sections.length}
+					<div
+						class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900"
+					>
+						<p
+							class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+						>
+							Sections
+						</p>
+						<ul class="mt-3 space-y-2 text-slate-700 dark:text-slate-200">
+							{#each sections as section (section.id)}
+								<li
+									class={section.level === 3
+										? 'pl-4 text-sm text-slate-600 dark:text-slate-300'
+										: ''}
+								>
+									<a href={`#${section.id}`} class="hover:text-sky-500">
+										{section.title}
+									</a>
+								</li>
+							{/each}
+						</ul>
+					</div>
+				{/if}
 			</aside>
 		{/if}
 

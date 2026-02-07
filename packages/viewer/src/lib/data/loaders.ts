@@ -1,4 +1,5 @@
 import type {
+	ComponentsIndex,
 	DiagramsIndex,
 	ImagesIndex,
 	InfoIndex,
@@ -32,3 +33,6 @@ export const loadInfoIndex = (fetcher: typeof fetch): Promise<InfoIndex> =>
 
 export const loadImagesIndex = (fetcher: typeof fetch): Promise<ImagesIndex> =>
 	loadJson<ImagesIndex>(fetcher, 'images/index.json');
+
+export const loadComponentsIndex = (fetcher: typeof fetch): Promise<ComponentsIndex> =>
+	loadJson<ComponentsIndex>(fetcher, 'components/index.json');

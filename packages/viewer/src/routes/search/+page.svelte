@@ -6,8 +6,15 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { Index } from 'flexsearch';
-	import type { DiagramMeta, InfoPageMeta, ModelReference } from '@emdzej/wds-core';
-	import { loadDiagramsIndex, loadInfoIndex } from '$lib/data/loaders';
+	import type {
+		ComponentMeta,
+		ComponentsIndex,
+		DiagramMeta,
+		DiagramsIndex,
+		InfoPageMeta,
+		ModelReference
+	} from '@emdzej/wds-core';
+	import { loadComponentsIndex, loadDiagramsIndex, loadInfoIndex } from '$lib/data/loaders';
 	import SearchInput from '$lib/components/SearchInput.svelte';
 
 	type SearchItemType = 'diagram' | 'info';
@@ -26,11 +33,15 @@
 	let searchIndex = $state<Index | null>(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+	let componentsIndex = $state<ComponentsIndex | null>(null);
+	let componentError = $state<string | null>(null);
+	let diagramsIndex = $state<DiagramsIndex | null>(null);
 	let enabledTypes = new SvelteSet<SearchItemType>(['diagram', 'info']);
 	let itemsByKey = new SvelteMap<string, SearchItem>();
 	let lastPageQuery = $state('');
 
 	const pageQuery = $derived(browser ? ($page.url.searchParams.get('q') ?? '') : '');
+	const componentQuery = $derived(browser ? ($page.url.searchParams.get('component') ?? '') : '');
 
 	$effect(() => {
 		if (pageQuery !== lastPageQuery) {
@@ -38,6 +49,42 @@
 			lastPageQuery = pageQuery;
 		}
 	});
+
+	const normalizeComponentOccurrences = (
+		component: ComponentMeta | null
+	): { diagramId: string; model?: string; occurrences?: number }[] => {
+		if (!component) return [] as { diagramId: string; model?: string; occurrences?: number }[];
+		if (Array.isArray(component.occurrences)) {
+			return component.occurrences
+				.map((occ) => {
+					if (!occ) return null;
+					if (typeof occ === 'string') {
+						return { diagramId: occ };
+					}
+					const diagramId = occ.diagramId ?? occ.diagram;
+					if (!diagramId) return null;
+					return { diagramId, model: occ.model, occurrences: occ.occurrences };
+				})
+				.filter(Boolean) as { diagramId: string; model?: string; occurrences?: number }[];
+		}
+		if (Array.isArray(component.diagrams)) {
+			return component.diagrams.map((diagramId) => ({ diagramId }));
+		}
+		return [];
+	};
+
+	const resolveComponent = (
+		components: ComponentsIndex | null,
+		id: string
+	): ComponentMeta | null => {
+		if (!components) return null;
+		const lowered = id.toLowerCase();
+		return (
+			components.components.find((component) => component.id.toLowerCase() === lowered) ??
+			components.components.find((component) => component.title?.toLowerCase() === lowered) ??
+			null
+		);
+	};
 
 	const buildIndex = (diagrams: DiagramMeta[], infoPages: InfoPageMeta[]) => {
 		const index = new Index({
@@ -96,13 +143,19 @@
 
 	onMount(async () => {
 		try {
-			const [diagramsIndex, infoIndex] = await Promise.all([
+			const [loadedDiagramsIndex, infoIndex] = await Promise.all([
 				loadDiagramsIndex(fetch),
 				loadInfoIndex(fetch)
 			]);
-			buildIndex(diagramsIndex.diagrams, infoIndex.pages);
+			diagramsIndex = loadedDiagramsIndex;
+			buildIndex(loadedDiagramsIndex.diagrams, infoIndex.pages);
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'Failed to load search index.';
+		}
+		try {
+			componentsIndex = await loadComponentsIndex(fetch);
+		} catch (err) {
+			componentError = err instanceof Error ? err.message : 'Failed to load component index.';
 		} finally {
 			loading = false;
 		}
@@ -143,6 +196,26 @@
 		diagram: filteredResults.filter((item) => item.type === 'diagram'),
 		info: filteredResults.filter((item) => item.type === 'info')
 	}));
+
+	const componentUsage = $derived.by(() => {
+		const term = componentQuery.trim();
+		if (!term) return null;
+		const component = resolveComponent(componentsIndex, term);
+		const occurrences = normalizeComponentOccurrences(component);
+		const entries = occurrences.map((occ) => {
+			const meta = diagramsIndex?.diagrams.find((diagram) => diagram.id === occ.diagramId);
+			const references = occ.model
+				? [{ model: occ.model, occurrences: occ.occurrences ?? 1 }]
+				: (meta?.referencedBy ?? []);
+			return { id: occ.diagramId, meta, references };
+		});
+		return {
+			componentId: component?.id ?? term,
+			componentTitle: component?.title,
+			componentDescription: component?.description,
+			entries
+		};
+	});
 
 	const typeCounts = $derived.by(() => {
 		const counts = { diagram: 0, info: 0 };
@@ -195,6 +268,69 @@
 			Info pages ({typeCounts.info})
 		</label>
 	</div>
+
+	{#if componentQuery.trim()}
+		<section
+			class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+		>
+			<div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+				<div>
+					<p
+						class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+					>
+						Where used
+					</p>
+					<h2 class="mt-1 text-lg font-semibold text-slate-900 dark:text-slate-100">
+						{componentUsage?.componentTitle ?? componentUsage?.componentId ?? componentQuery}
+					</h2>
+					{#if componentUsage?.componentDescription}
+						<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+							{componentUsage.componentDescription}
+						</p>
+					{/if}
+				</div>
+				<span class="text-sm text-slate-500 dark:text-slate-400">
+					Component ID: {componentUsage?.componentId ?? componentQuery}
+				</span>
+			</div>
+			{#if componentError}
+				<p class="text-sm text-rose-500">{componentError}</p>
+			{:else if !componentsIndex}
+				<p class="text-sm text-slate-500 dark:text-slate-400">Loading component index…</p>
+			{:else if !componentUsage || componentUsage.entries.length === 0}
+				<p class="text-sm text-slate-500 dark:text-slate-400">
+					No diagrams found for this component.
+				</p>
+			{:else}
+				<ul class="space-y-4">
+					{#each componentUsage.entries as entry (entry.id)}
+						<li class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+							<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+								{entry.meta?.title ?? entry.id}
+							</p>
+							<p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{entry.id}</p>
+							{#if entry.references.length}
+								<div class="mt-3 flex flex-wrap gap-2">
+									{#each entry.references as ref (ref.model)}
+										<a
+											href={resolve(toPathname(`/${ref.model}/diagram/${entry.id}`))}
+											class="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-400"
+										>
+											{ref.model} ({ref.occurrences})
+										</a>
+									{/each}
+								</div>
+							{:else}
+								<p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+									Model reference data unavailable.
+								</p>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+			{/if}
+		</section>
+	{/if}
 
 	{#if loading}
 		<div
