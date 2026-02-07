@@ -61,6 +61,40 @@ pnpm validate
 pnpm stats
 ```
 
+## Viewer (SvelteKit)
+
+The viewer is a static app shell. **BMW WDS data is not included** and must be provided at runtime.
+
+### Run locally
+
+```bash
+pnpm --filter viewer dev
+```
+
+Data is loaded from `/data` by default. To test locally, either:
+
+- Serve your generated data at `/data`, or
+- Copy/symlink it into `packages/viewer/static/data`.
+
+You can also override the data base path:
+
+```bash
+VITE_WDS_DATA_BASE="/my-data" pnpm --filter viewer dev
+```
+
+### Build (static)
+
+```bash
+pnpm --filter viewer build
+```
+
+Static output: `packages/viewer/build`.
+
+### GitHub Pages
+
+The workflow publishes the viewer to GitHub Pages with `BASE_PATH=/wds`.
+Make sure your data is available at `${BASE_PATH}/data` when deploying.
+
 ## License
 
 This is a personal project for educational and archival purposes. Original BMW data remains property of BMW AG.

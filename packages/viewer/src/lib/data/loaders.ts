@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import type {
 	ComponentsIndex,
 	DiagramsIndex,
@@ -7,7 +8,7 @@ import type {
 	ModelsIndex
 } from '@emdzej/wds-core';
 
-const DATA_BASE_PATH = '/data';
+const DATA_BASE_PATH = (import.meta.env.VITE_WDS_DATA_BASE ?? `${base}/data`).replace(/\/$/, '');
 
 const loadJson = async <T>(fetcher: typeof fetch, path: string): Promise<T> => {
 	const response = await fetcher(`${DATA_BASE_PATH}/${path}`);

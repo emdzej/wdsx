@@ -5,13 +5,21 @@ const mdsvexOptions = {
 	extensions: ['.md']
 };
 
+const basePath = process.env.BASE_PATH ?? '';
+
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	extensions: ['.svelte', '.md'],
 	preprocess: [mdsvex(mdsvexOptions)],
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			fallback: '404.html'
+		}),
+		paths: {
+			base: basePath
+		},
 		prerender: {
+			entries: ['*'],
 			handleHttpError: ({ status, path }) => {
 				if (status === 404 && path.startsWith('/data/')) {
 					return;
