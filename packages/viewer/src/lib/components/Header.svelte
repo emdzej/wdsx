@@ -17,9 +17,7 @@
 		onToggleSidebar?: () => void;
 	}>();
 
-	const pageQuery = $derived(
-		browser ? $page.url.searchParams.get('q') ?? '' : ''
-	);
+	const pageQuery = $derived(browser ? ($page.url.searchParams.get('q') ?? '') : '');
 
 	const toPathname = (path: string) => path as App.Pathname;
 

@@ -30,9 +30,7 @@
 	let itemsByKey = new SvelteMap<string, SearchItem>();
 	let lastPageQuery = $state('');
 
-	const pageQuery = $derived(
-		browser ? $page.url.searchParams.get('q') ?? '' : ''
-	);
+	const pageQuery = $derived(browser ? ($page.url.searchParams.get('q') ?? '') : '');
 
 	$effect(() => {
 		if (pageQuery !== lastPageQuery) {
