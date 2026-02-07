@@ -1,42 +1,41 @@
-# sv
+# WDS Viewer
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+SvelteKit front-end for browsing BMW WDS data. The app shell is static — **you must provide the WDS data separately**.
 
-## Creating a project
+## Requirements
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Node.js 22
+- pnpm
 
-```sh
-# create a new project
-npx sv create my-app
+## Development
+
+From the repo root:
+
+```bash
+pnpm install
+pnpm --filter viewer dev
 ```
 
-To recreate this project with the same configuration:
+The viewer expects JSON data under `/data`. You can:
 
-```sh
-# recreate this project
-pnpm dlx sv create --template minimal --types ts --add eslint prettier --install pnpm packages/viewer
+- Mount/serve data at `http://localhost:5173/data/...` (proxy or static server), or
+- Copy/symlink generated data into `packages/viewer/static/data` for local testing.
+
+If your data lives elsewhere, set:
+
+```bash
+VITE_WDS_DATA_BASE="/path-or-url"
 ```
 
-## Developing
+## Production build
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```bash
+pnpm --filter viewer build
 ```
 
-## Building
+Static output is emitted to `packages/viewer/build`.
 
-To create a production version of your app:
+## GitHub Pages
 
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+The workflow uses `BASE_PATH=/wds` and publishes the static build to GitHub Pages.
+Make sure your data is served from `${BASE_PATH}/data` when deploying.

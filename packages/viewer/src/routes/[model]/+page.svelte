@@ -44,7 +44,10 @@
 	$effect(() => {
 		if (browser && modelId && loadedModelId !== modelId) {
 			loadedModelId = modelId;
-			expandedIds = new SvelteSet(loadExpandedIds(modelId));
+			expandedIds.clear();
+			for (const id of loadExpandedIds(modelId)) {
+				expandedIds.add(id);
+			}
 		}
 	});
 
