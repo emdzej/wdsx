@@ -334,9 +334,14 @@
 
 	{#if loading}
 		<div
-			class="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+			class="rounded-2xl border border-dashed border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
 		>
-			Building search index…
+			<div class="space-y-4">
+				<div class="skeleton-line w-1/4"></div>
+				<div class="skeleton-line w-2/3"></div>
+				<div class="skeleton-line"></div>
+				<div class="skeleton-line w-5/6"></div>
+			</div>
 		</div>
 	{:else if error}
 		<div

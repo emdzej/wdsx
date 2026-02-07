@@ -5,12 +5,13 @@
 	import type { ModelTree } from '@emdzej/wds-core';
 	import TreeNode from '$lib/components/TreeNode.svelte';
 
-	export let data: { treePromise: Promise<ModelTree> };
+	let { data } = $props<{ data: { treePromise: Promise<ModelTree> } }>();
 
 	let expandedIds = new SvelteSet<string>();
 	let loadedModelId: string | null = null;
+	let mobileTreeOpen = $state(false);
 
-	$: modelId = $page.params.model ?? '';
+	const modelId = $derived($page.params.model ?? '');
 
 	const getStorageKey = (id: string) => `wds-viewer-tree:${id}`;
 
@@ -40,10 +41,12 @@
 		}
 	};
 
-	$: if (browser && modelId && loadedModelId !== modelId) {
-		loadedModelId = modelId;
-		expandedIds = new SvelteSet(loadExpandedIds(modelId));
-	}
+	$effect(() => {
+		if (browser && modelId && loadedModelId !== modelId) {
+			loadedModelId = modelId;
+			expandedIds = new SvelteSet(loadExpandedIds(modelId));
+		}
+	});
 
 	const toggleNode = (id: string) => {
 		if (expandedIds.has(id)) {
@@ -73,15 +76,23 @@
 
 	{#await data.treePromise}
 		<div
-			class="rounded-2xl border border-dashed border-slate-200 bg-white p-8 text-center text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+			class="rounded-2xl border border-dashed border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
 		>
-			Loading tree…
+			<div class="space-y-4">
+				<div class="skeleton-line w-32"></div>
+				<div class="skeleton-line h-6 w-48"></div>
+				<div class="space-y-2">
+					<div class="skeleton-line"></div>
+					<div class="skeleton-line w-11/12"></div>
+					<div class="skeleton-line w-5/6"></div>
+				</div>
+			</div>
 		</div>
 	{:then modelTree}
 		<div
 			class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
 		>
-			<div class="mb-4 flex items-center justify-between">
+			<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
 				<div>
 					<p
 						class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
@@ -92,15 +103,65 @@
 						Navigation tree
 					</h2>
 				</div>
-				<p class="text-xs text-slate-500 dark:text-slate-400">
+				<p class="hidden text-xs text-slate-500 dark:text-slate-400 md:block">
 					Updated {modelTree.generated}
 				</p>
+				<button
+					onclick={() => (mobileTreeOpen = true)}
+					class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 md:hidden"
+					type="button"
+				>
+					Browse tree
+				</button>
 			</div>
 
-			<ul class="space-y-1">
-				<TreeNode node={modelTree.tree} {modelId} {expandedIds} onToggle={toggleNode} />
-			</ul>
+			<div class="hidden md:block">
+				<ul class="space-y-1">
+					<TreeNode node={modelTree.tree} {modelId} {expandedIds} onToggle={toggleNode} />
+				</ul>
+			</div>
+
+			<p class="mt-4 text-xs text-slate-500 dark:text-slate-400 md:hidden">
+				Updated {modelTree.generated}
+			</p>
 		</div>
+
+		{#if mobileTreeOpen}
+			<button
+				type="button"
+				class="fixed inset-0 z-40 bg-slate-900/40 md:hidden wds-no-print"
+				onclick={() => (mobileTreeOpen = false)}
+				aria-label="Close tree"
+			></button>
+			<div
+				class="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-hidden rounded-t-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950 md:hidden wds-no-print"
+			>
+				<div
+					class="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800"
+				>
+					<div>
+						<p
+							class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+						>
+							{modelTree.model}
+						</p>
+						<h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">Model tree</h3>
+					</div>
+					<button
+						type="button"
+						onclick={() => (mobileTreeOpen = false)}
+						class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-600 transition hover:text-slate-900 dark:border-slate-800 dark:text-slate-300"
+					>
+						Close
+					</button>
+				</div>
+				<div class="max-h-[calc(80vh-3.5rem)] overflow-y-auto px-3 py-4">
+					<ul class="space-y-1">
+						<TreeNode node={modelTree.tree} {modelId} {expandedIds} onToggle={toggleNode} />
+					</ul>
+				</div>
+			</div>
+		{/if}
 	{:catch error}
 		<div
 			class="rounded-2xl border border-red-200 bg-red-50 p-8 text-center text-red-700 shadow-sm dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-200"

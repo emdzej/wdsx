@@ -5,3 +5,36 @@
 :root {
 	color-scheme: light dark;
 }
+
+@layer utilities {
+	.skeleton {
+		@apply animate-pulse rounded-lg bg-slate-200/70 dark:bg-slate-800/70;
+	}
+
+	.skeleton-line {
+		@apply skeleton h-4;
+	}
+}
+
+@media print {
+	body {
+		background: white;
+	}
+
+	.wds-no-print {
+		display: none !important;
+	}
+
+	.wds-diagram-container {
+		height: auto !important;
+		min-height: 0 !important;
+		border: none !important;
+		box-shadow: none !important;
+		background: transparent !important;
+	}
+
+	.wds-diagram-canvas svg {
+		width: 100% !important;
+		height: auto !important;
+	}
+}

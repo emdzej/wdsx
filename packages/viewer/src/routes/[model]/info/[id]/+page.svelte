@@ -322,9 +322,18 @@
 		<div class="min-w-0 flex-1">
 			{#if loading}
 				<div
-					class="rounded-xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+					class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
 				>
-					Loading info page…
+					<div class="space-y-4">
+						<div class="skeleton-line w-1/3"></div>
+						<div class="skeleton-line h-6 w-2/3"></div>
+						<div class="space-y-2">
+							<div class="skeleton-line"></div>
+							<div class="skeleton-line w-11/12"></div>
+							<div class="skeleton-line w-5/6"></div>
+							<div class="skeleton-line w-3/4"></div>
+						</div>
+					</div>
 				</div>
 			{:else if error}
 				<div

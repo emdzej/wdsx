@@ -36,11 +36,21 @@
 
 <div class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
 	<div class="flex min-h-screen">
-		<Sidebar open={sidebarOpen} onClose={() => (sidebarOpen = false)} />
+		<div class="wds-no-print">
+			<Sidebar open={sidebarOpen} onClose={() => (sidebarOpen = false)} />
+		</div>
 		<div class="flex min-h-screen flex-1 flex-col">
-			<Header {models} bind:selectedModelId onToggleSidebar={() => (sidebarOpen = !sidebarOpen)} />
+			<div class="wds-no-print">
+				<Header
+					{models}
+					bind:selectedModelId
+					onToggleSidebar={() => (sidebarOpen = !sidebarOpen)}
+				/>
+			</div>
 			<main class="flex-1 px-4 py-6 md:px-8">
-				<Breadcrumbs />
+				<div class="wds-no-print">
+					<Breadcrumbs />
+				</div>
 				<div class="mt-6">
 					{@render children()}
 				</div>
