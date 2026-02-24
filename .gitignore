@@ -51,3 +51,4 @@ tmp/
 temp/
 *.tmp
 .turbo
+.data

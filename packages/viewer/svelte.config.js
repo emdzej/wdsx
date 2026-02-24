@@ -18,16 +18,16 @@ const config = {
 		paths: {
 			base: basePath
 		},
-		prerender: {
-			entries: ['*'],
-			handleHttpError: ({ status, path }) => {
-				if (status === 404 && path.startsWith('/data/')) {
-					return;
-				}
-				throw new Error(`Prerender request failed with ${status} for ${path}`);
-			},
-			handleUnseenRoutes: 'ignore'
-		}
+		// prerender: {
+		// 	entries: ['*'],
+		// 	handleHttpError: ({ status, path }) => {
+		// 		if (status === 404 && path.startsWith('/data/')) {
+		// 			return;
+		// 		}
+		// 		throw new Error(`Prerender request failed with ${status} for ${path}`);
+		// 	},
+		// 	handleUnseenRoutes: 'ignore'
+		// }
 	}
 };
 
