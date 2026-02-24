@@ -76,11 +76,12 @@
 		diagramsIndex?.diagrams.find((diagram) => diagram.id === id);
 
 	const normalizeImagePaths = (markdown: string): string => {
+		// Rewrite zi_images/ → /data/zi_images/
 		const withMarkdownImages = markdown.replace(
 			/(!\[[^\]]*\]\()\/?(zi_images\/[^)]+)\)/gi,
-			'$1/$2)'
+			'$1/data/$2)'
 		);
-		return withMarkdownImages.replace(/src=["']\/?(zi_images\/[^"']+)["']/gi, 'src="/$1"');
+		return withMarkdownImages.replace(/src=["']\/?(zi_images\/[^"']+)["']/gi, 'src="/data/$1"');
 	};
 
 	const buildMarkdownWithAnchors = (markdown: string) => {
