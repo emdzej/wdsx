@@ -322,7 +322,7 @@
 	</aside>
 
 	<!-- Resize handle -->
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions a11y_no_noninteractive_tabindex -->
 	<div
 		class="w-2 flex-shrink-0 cursor-col-resize group flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
 		onmousedown={startResize}
