@@ -51,12 +51,12 @@
 
 	const setupPanzoom = (svg: SVGSVGElement) => {
 		panzoomInstance?.dispose();
-		
+
 		svg.style.width = '100%';
 		svg.style.height = '100%';
 		svg.style.maxWidth = 'none';
 		svg.style.maxHeight = 'none';
-		
+
 		panzoomInstance = panzoom(svg, {
 			maxZoom: 10,
 			minZoom: 0.1,
@@ -155,7 +155,7 @@
 			if (currentLoad !== loadCounter) return;
 			svgMarkup = markup;
 			await tick();
-			
+
 			requestAnimationFrame(() => {
 				const svg = svgHost?.querySelector('svg');
 				if (!svg) return;
@@ -296,7 +296,7 @@
 			</div>
 		{/if}
 	</div>
-	
+
 	<p class="mt-2 text-xs text-slate-400 dark:text-slate-500 wds-no-print">
 		Scroll to zoom • Drag to pan • Click links to navigate
 	</p>
@@ -312,7 +312,7 @@
 		stroke: #38bdf8 !important;
 		stroke-width: 2;
 	}
-	
+
 	:global(.wds-diagram-container svg) {
 		display: block;
 		max-width: none !important;

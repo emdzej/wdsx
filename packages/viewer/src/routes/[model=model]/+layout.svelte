@@ -7,9 +7,9 @@
 	import TreeNode from '$lib/components/TreeNode.svelte';
 	import { treeSearchQuery } from '$lib/stores/search';
 
-	let { children, data } = $props<{ 
+	let { children, data } = $props<{
 		children: () => unknown;
-		data: { treePromise: Promise<ModelTree> } 
+		data: { treePromise: Promise<ModelTree> };
 	}>();
 
 	let expandedIds = $state<string[]>([]);
@@ -18,7 +18,7 @@
 	let searchResults = $state<TreeNodeType[]>([]);
 	let selectedResultIndex = $state(0);
 	let treeData = $state<ModelTree | null>(null);
-	
+
 	// Resizable panel
 	let sidebarWidth = $state(320);
 	let isResizing = $state(false);
@@ -69,7 +69,7 @@
 
 	const toggleNode = (id: string) => {
 		if (expandedSet.has(id)) {
-			expandedIds = expandedIds.filter(x => x !== id);
+			expandedIds = expandedIds.filter((x) => x !== id);
 		} else {
 			expandedIds = [...expandedIds, id];
 		}
@@ -120,12 +120,14 @@
 		if (!treeData || !query.trim()) return [];
 		const allLeaves = flattenTree(treeData.tree);
 		const lowerQuery = query.toLowerCase();
-		return allLeaves
-			.filter(node => node.name.toLowerCase().includes(lowerQuery))
-			.slice(0, 10);
+		return allLeaves.filter((node) => node.name.toLowerCase().includes(lowerQuery)).slice(0, 10);
 	};
 
-	const findPathToNode = (root: TreeNodeType, targetId: string, path: string[] = []): string[] | null => {
+	const findPathToNode = (
+		root: TreeNodeType,
+		targetId: string,
+		path: string[] = []
+	): string[] | null => {
 		if (root.id === targetId) return path;
 		if (root.children) {
 			for (const child of root.children) {
@@ -147,13 +149,13 @@
 				}
 			}
 		}
-		
+
 		if (node.diagram) {
 			void goto(resolve(`/${modelId}/diagram/${node.diagram}`));
 		} else if (node.info) {
 			void goto(resolve(`/${modelId}/info/${node.info}`));
 		}
-		
+
 		searchQuery = '';
 		searchResults = [];
 	};
@@ -165,7 +167,7 @@
 
 	const handleSearchKeydown = (e: KeyboardEvent) => {
 		if (!searchResults.length) return;
-		
+
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			selectedResultIndex = Math.min(selectedResultIndex + 1, searchResults.length - 1);
@@ -184,14 +186,16 @@
 
 	// Load tree data
 	$effect(() => {
-		data.treePromise.then((tree: ModelTree) => {
-			treeData = tree;
-		}).catch(() => {});
+		data.treePromise
+			.then((tree: ModelTree) => {
+				treeData = tree;
+			})
+			.catch(() => {});
 	});
 
 	// React to search from diagram clicks
 	$effect(() => {
-		const unsubscribe = treeSearchQuery.subscribe(query => {
+		const unsubscribe = treeSearchQuery.subscribe((query) => {
 			if (query && treeData) {
 				searchQuery = query;
 				const results = searchTree(query);
@@ -212,17 +216,14 @@
 
 <div bind:this={containerRef} class="flex h-[calc(100vh-10rem)]" class:select-none={isResizing}>
 	<!-- Left panel: Search + Tree navigation -->
-	<aside 
-		class="flex-shrink-0 overflow-hidden flex flex-col"
-		style="width: {sidebarWidth}px"
-	>
+	<aside class="flex-shrink-0 overflow-hidden flex flex-col" style="width: {sidebarWidth}px">
 		<div class="mb-3">
 			<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
 				{modelId}
 			</p>
 			<h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Navigation</h2>
 		</div>
-		
+
 		<!-- Search input -->
 		<div class="relative mb-3">
 			<input
@@ -233,27 +234,52 @@
 				placeholder="Search diagrams & info..."
 				class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 pl-9 text-sm placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500"
 			/>
-			<svg class="absolute left-3 top-2.5 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+			<svg
+				class="absolute left-3 top-2.5 h-4 w-4 text-slate-400"
+				fill="none"
+				viewBox="0 0 24 24"
+				stroke="currentColor"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+				/>
 			</svg>
-			
+
 			<!-- Search results dropdown -->
 			{#if searchResults.length > 0}
-				<div class="absolute z-20 mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800">
+				<div
+					class="absolute z-20 mt-1 w-full rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800"
+				>
 					<ul class="max-h-64 overflow-y-auto py-1">
 						{#each searchResults as result, i (result.id)}
 							<li>
 								<button
 									type="button"
 									onclick={() => navigateToNode(result)}
-									class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition {i === selectedResultIndex ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700/50'}"
+									class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition {i ===
+									selectedResultIndex
+										? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300'
+										: 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700/50'}"
 								>
 									{#if result.diagram}
-										<svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 text-sky-500 flex-shrink-0">
-											<path d="M4.75 3.5A1.25 1.25 0 0 1 6 2.25h8A1.25 1.25 0 0 1 15.25 3.5v13A1.25 1.25 0 0 1 14 17.75H6A1.25 1.25 0 0 1 4.75 16.5v-13Z" />
+										<svg
+											viewBox="0 0 20 20"
+											fill="currentColor"
+											class="h-4 w-4 text-sky-500 flex-shrink-0"
+										>
+											<path
+												d="M4.75 3.5A1.25 1.25 0 0 1 6 2.25h8A1.25 1.25 0 0 1 15.25 3.5v13A1.25 1.25 0 0 1 14 17.75H6A1.25 1.25 0 0 1 4.75 16.5v-13Z"
+											/>
 										</svg>
 									{:else}
-										<svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 text-emerald-500 flex-shrink-0">
+										<svg
+											viewBox="0 0 20 20"
+											fill="currentColor"
+											class="h-4 w-4 text-emerald-500 flex-shrink-0"
+										>
 											<path d="M10 2.25a7.75 7.75 0 1 0 0 15.5 7.75 7.75 0 0 0 0-15.5Z" />
 										</svg>
 									{/if}
@@ -265,9 +291,11 @@
 				</div>
 			{/if}
 		</div>
-		
+
 		<!-- Tree -->
-		<div class="flex-1 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+		<div
+			class="flex-1 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+		>
 			{#await data.treePromise}
 				<div class="space-y-2 p-2">
 					<div class="skeleton-line w-32"></div>
@@ -276,11 +304,11 @@
 				</div>
 			{:then modelTree}
 				<ul class="space-y-1">
-					<TreeNode 
-						node={modelTree.tree} 
-						{modelId} 
-						expandedIds={expandedSet} 
-						onToggle={toggleNode} 
+					<TreeNode
+						node={modelTree.tree}
+						{modelId}
+						expandedIds={expandedSet}
+						onToggle={toggleNode}
 					/>
 				</ul>
 			{:catch error}
@@ -300,7 +328,9 @@
 		aria-orientation="vertical"
 		tabindex="0"
 	>
-		<div class="w-0.5 h-8 rounded-full bg-slate-300 group-hover:bg-slate-400 dark:bg-slate-600 dark:group-hover:bg-slate-500 transition-colors"></div>
+		<div
+			class="w-0.5 h-8 rounded-full bg-slate-300 group-hover:bg-slate-400 dark:bg-slate-600 dark:group-hover:bg-slate-500 transition-colors"
+		></div>
 	</div>
 
 	<!-- Right panel: Content viewer -->

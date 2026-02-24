@@ -17,7 +17,7 @@ const config = {
 		}),
 		paths: {
 			base: basePath
-		},
+		}
 		// prerender: {
 		// 	entries: ['*'],
 		// 	handleHttpError: ({ status, path }) => {

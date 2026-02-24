@@ -196,7 +196,7 @@
 			relatedDiagramRefs = new Map(
 				relatedDiagramIds.map((id) => [id, getDiagramMeta(id)?.referencedBy ?? []])
 			);
-			
+
 			// Use marked to convert markdown to HTML
 			htmlContent = await marked.parse(prepared.content);
 		} catch (err) {
@@ -235,7 +235,9 @@
 	<!-- Content -->
 	<div class="flex-1 min-h-0 overflow-y-auto">
 		{#if loading}
-			<div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+			<div
+				class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+			>
 				<div class="space-y-4">
 					<div class="skeleton-line w-1/3"></div>
 					<div class="skeleton-line h-6 w-2/3"></div>
@@ -247,7 +249,9 @@
 				</div>
 			</div>
 		{:else if error}
-			<div class="rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200">
+			<div
+				class="rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200"
+			>
 				{error}
 			</div>
 		{:else if htmlContent}
@@ -259,13 +263,17 @@
 				>
 					{@html htmlContent}
 				</div>
-				
+
 				<!-- Sidebar (sections + related diagrams) -->
 				{#if sections.length || relatedDiagrams.length}
 					<aside class="w-56 flex-shrink-0 space-y-4">
 						{#if sections.length}
-							<div class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900">
-								<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+							<div
+								class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900"
+							>
+								<p
+									class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+								>
 									Sections
 								</p>
 								<ul class="mt-3 space-y-2 text-slate-700 dark:text-slate-200">
@@ -279,10 +287,14 @@
 								</ul>
 							</div>
 						{/if}
-						
+
 						{#if relatedDiagrams.length}
-							<div class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900">
-								<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+							<div
+								class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900"
+							>
+								<p
+									class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
+								>
 									Diagrams
 								</p>
 								<ul class="mt-3 space-y-2">
@@ -308,7 +320,9 @@
 				{/if}
 			</div>
 		{:else}
-			<div class="rounded-xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+			<div
+				class="rounded-xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+			>
 				No content available.
 			</div>
 		{/if}

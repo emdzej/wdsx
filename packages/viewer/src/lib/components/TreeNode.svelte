@@ -40,7 +40,10 @@
 					/>
 				</svg>
 			</span>
-			<span class="flex h-5 w-5 flex-shrink-0 items-center justify-center text-amber-500" aria-hidden="true">
+			<span
+				class="flex h-5 w-5 flex-shrink-0 items-center justify-center text-amber-500"
+				aria-hidden="true"
+			>
 				<svg viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5">
 					<path
 						d="M2.75 5.5A2.75 2.75 0 0 1 5.5 2.75h3.379a2.75 2.75 0 0 1 1.944.805l1.122 1.122c.326.326.768.51 1.228.51H14.5A2.75 2.75 0 0 1 17.25 7.5v6.25A2.75 2.75 0 0 1 14.5 16.5h-9A2.75 2.75 0 0 1 2.75 13.75V5.5Z"

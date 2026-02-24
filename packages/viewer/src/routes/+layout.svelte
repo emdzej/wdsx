@@ -4,7 +4,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { loadModelsIndex } from '$lib/data/loaders';
 	import type { ModelMeta } from '@emdzej/wds-core';
-	import Header from '$lib/components/Header.svelte';	
+	import Header from '$lib/components/Header.svelte';
 	import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
 
 	let { children } = $props<{ children: () => unknown }>();
@@ -34,7 +34,7 @@
 </svelte:head>
 
 <div class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
-	<div class="flex min-h-screen">		
+	<div class="flex min-h-screen">
 		<div class="flex min-h-screen flex-1 flex-col">
 			<div class="wds-no-print">
 				<Header
