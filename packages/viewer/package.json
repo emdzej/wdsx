@@ -17,6 +17,7 @@
 	"dependencies": {
 		"@emdzej/wds-core": "workspace:*",
 		"flexsearch": "^0.8.212",
+		"marked": "^17.0.3",
 		"panzoom": "^9.4.3"
 	},
 	"devDependencies": {
@@ -25,9 +26,9 @@
 		"@sveltejs/adapter-static": "^3.0.0",
 		"@sveltejs/kit": "^2.50.2",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
-		"@vite-pwa/sveltekit": "^1.1.0",
 		"@tailwindcss/typography": "^0.5.16",
 		"@types/node": "^22",
+		"@vite-pwa/sveltekit": "^1.1.0",
 		"autoprefixer": "^10.4.21",
 		"eslint": "^9.39.2",
 		"eslint-config-prettier": "^10.1.8",

@@ -3,9 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
-	import { compile as mdsvexCompile } from 'mdsvex';
-	import { compile as svelteCompile } from 'svelte/compiler';
-	import type { ComponentType } from 'svelte';
+	import { marked } from 'marked';
 	import type {
 		DiagramMeta,
 		DiagramsIndex,
@@ -19,7 +17,7 @@
 	let error = $state<string | null>(null);
 	let infoMeta = $state<InfoPageMeta | null>(null);
 	let sections = $state<{ id: string; title: string; level: number }[]>([]);
-	let MarkdownComponent = $state<ComponentType | null>(null);
+	let htmlContent = $state<string>('');
 	let markdownHost = $state<HTMLDivElement | null>(null);
 	let loadCounter = 0;
 
@@ -118,19 +116,6 @@
 		};
 	};
 
-	const toBase64 = (value: string): string => {
-		return btoa(unescape(encodeURIComponent(value)));
-	};
-
-	const compileMarkdownComponent = async (markdown: string): Promise<ComponentType | null> => {
-		const compiled = await mdsvexCompile(markdown, { extensions: ['.md'] });
-		if (!compiled?.code) return null;
-		const { js } = svelteCompile(compiled.code, { generate: 'client' });
-		const moduleUrl = `data:text/javascript;base64,${toBase64(js.code)}`;
-		const module = await import(/* @vite-ignore */ moduleUrl);
-		return module.default ?? null;
-	};
-
 	const parseInfoLink = (href: string): string | null => {
 		const match = href.match(/(?:^|\/)(?:S)?([A-Za-z0-9_-]+)\.html?$/i);
 		return match?.[1] ?? null;
@@ -177,7 +162,7 @@
 		error = null;
 		infoMeta = null;
 		sections = [];
-		MarkdownComponent = null;
+		htmlContent = '';
 
 		try {
 			const indexResponse = await fetch('/data/info/index.json');
@@ -210,7 +195,9 @@
 			relatedDiagramRefs = new Map(
 				relatedDiagramIds.map((id) => [id, getDiagramMeta(id)?.referencedBy ?? []])
 			);
-			MarkdownComponent = await compileMarkdownComponent(prepared.content);
+			
+			// Use marked to convert markdown to HTML
+			htmlContent = await marked.parse(prepared.content);
 		} catch (err) {
 			if (currentLoad !== loadCounter) return;
 			error = err instanceof Error ? err.message : 'Failed to load info page';
@@ -262,14 +249,14 @@
 			<div class="rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200">
 				{error}
 			</div>
-		{:else if MarkdownComponent}
+		{:else if htmlContent}
 			<div class="flex gap-6">
 				<!-- Main content -->
 				<div
 					bind:this={markdownHost}
 					class="info-markdown prose max-w-none flex-1 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:prose-invert prose-slate"
 				>
-					<MarkdownComponent />
+					{@html htmlContent}
 				</div>
 				
 				<!-- Sidebar (sections + related diagrams) -->

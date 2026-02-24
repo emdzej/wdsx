@@ -273,10 +273,10 @@
 		</div>
 	</div>
 
-	<!-- SVG Container -->
+	<!-- SVG Container (always white background for diagrams) -->
 	<div
 		bind:this={svgHost}
-		class="relative flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 wds-diagram-container"
+		class="relative flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 wds-diagram-container"
 	>
 		{#if loading}
 			<div class="flex h-full flex-col items-center justify-center gap-4 px-6">
