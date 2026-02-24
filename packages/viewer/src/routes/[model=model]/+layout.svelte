@@ -184,7 +184,7 @@
 
 	// Load tree data
 	$effect(() => {
-		data.treePromise.then(tree => {
+		data.treePromise.then((tree: ModelTree) => {
 			treeData = tree;
 		}).catch(() => {});
 	});
@@ -292,11 +292,13 @@
 	</aside>
 
 	<!-- Resize handle -->
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		class="w-2 flex-shrink-0 cursor-col-resize group flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
 		onmousedown={startResize}
 		role="separator"
 		aria-orientation="vertical"
+		tabindex="0"
 	>
 		<div class="w-0.5 h-8 rounded-full bg-slate-300 group-hover:bg-slate-400 dark:bg-slate-600 dark:group-hover:bg-slate-500 transition-colors"></div>
 	</div>
