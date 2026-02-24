@@ -3,7 +3,6 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { onDestroy, onMount, tick } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
 	import panzoom from 'panzoom';
 	import type { DiagramMeta, DiagramsIndex } from '@emdzej/wds-core';
 
@@ -16,9 +15,6 @@
 	let svgElement: SVGSVGElement | null = null;
 	let panzoomInstance: ReturnType<typeof panzoom> | null = null;
 	let loadCounter = 0;
-	let activePointers = new SvelteMap<number, { x: number; y: number }>();
-	let pinchStartDistance = 0;
-	let pinchStartZoom = 1;
 
 	const diagramId = $derived($page.params.id ?? '');
 	const modelId = $derived($page.params.model ?? '');
@@ -32,14 +28,6 @@
 		const match = href.match(/([A-Za-z0-9_-]+)\.svgz?$/i);
 		return match?.[1] ?? null;
 	};
-
-	const distance = (a: { x: number; y: number }, b: { x: number; y: number }) =>
-		Math.hypot(a.x - b.x, a.y - b.y);
-
-	const center = (a: { x: number; y: number }, b: { x: number; y: number }) => ({
-		x: (a.x + b.x) / 2,
-		y: (a.y + b.y) / 2
-	});
 
 	const fetchSvgMarkup = async (file: string): Promise<string> => {
 		const response = await fetch(`/data/diagrams/${file}`);
@@ -62,12 +50,24 @@
 
 	const setupPanzoom = (svg: SVGSVGElement) => {
 		panzoomInstance?.dispose();
+		
+		// Important: panzoom needs the SVG to have proper dimensions
+		svg.style.width = '100%';
+		svg.style.height = '100%';
+		svg.style.maxWidth = 'none';
+		svg.style.maxHeight = 'none';
+		
 		panzoomInstance = panzoom(svg, {
-			maxZoom: 8,
-			minZoom: 0.2,
-			zoomSpeed: 0.1,
-			bounds: true,
-			boundsPadding: 0.1
+			maxZoom: 10,
+			minZoom: 0.1,
+			zoomSpeed: 0.065,
+			bounds: false,
+			boundsPadding: 0.1,
+			smoothScroll: false,
+			// Enable mouse wheel zoom
+			beforeWheel: () => false,
+			// Filter touch events to allow pinch zoom
+			filterKey: () => true
 		});
 	};
 
@@ -120,41 +120,6 @@
 		link.classList.remove('wds-link-hover');
 	};
 
-	const handleTouchPointerDown = (event: PointerEvent) => {
-		if (event.pointerType !== 'touch') return;
-		if (!svgHost) return;
-		svgHost.setPointerCapture(event.pointerId);
-		activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-		if (activePointers.size === 2) {
-			const [first, second] = Array.from(activePointers.values());
-			pinchStartDistance = distance(first, second);
-			pinchStartZoom = panzoomInstance?.getTransform().scale ?? 1;
-		}
-	};
-
-	const handleTouchPointerMove = (event: PointerEvent) => {
-		if (event.pointerType !== 'touch') return;
-		if (!activePointers.has(event.pointerId)) return;
-		activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-		if (activePointers.size !== 2 || !panzoomInstance || !svgHost || pinchStartDistance === 0) {
-			return;
-		}
-		const [first, second] = Array.from(activePointers.values());
-		const newDistance = distance(first, second);
-		const zoom = pinchStartZoom * (newDistance / pinchStartDistance);
-		const rect = svgHost.getBoundingClientRect();
-		const focus = center(first, second);
-		panzoomInstance.zoomAbs(focus.x - rect.left, focus.y - rect.top, zoom);
-	};
-
-	const handleTouchPointerUp = (event: PointerEvent) => {
-		if (event.pointerType !== 'touch') return;
-		activePointers.delete(event.pointerId);
-		if (activePointers.size < 2) {
-			pinchStartDistance = 0;
-		}
-	};
-
 	const attachSvgInteractions = (svg: SVGSVGElement) => {
 		svg.addEventListener('click', handleSvgClick);
 		svg.addEventListener('pointerover', handlePointerOver);
@@ -191,13 +156,17 @@
 			if (currentLoad !== loadCounter) return;
 			svgMarkup = markup;
 			await tick();
-			const svg = svgHost?.querySelector('svg');
-			if (!svg) return;
-			detachSvgInteractions();
-			svgElement = svg;
-			decorateLinks(svg);
-			attachSvgInteractions(svg);
-			setupPanzoom(svg);
+			
+			// Wait for DOM update
+			requestAnimationFrame(() => {
+				const svg = svgHost?.querySelector('svg');
+				if (!svg) return;
+				detachSvgInteractions();
+				svgElement = svg;
+				decorateLinks(svg);
+				attachSvgInteractions(svg);
+				setupPanzoom(svg);
+			});
 		} catch (err) {
 			if (currentLoad !== loadCounter) return;
 			error = err instanceof Error ? err.message : 'Failed to load diagram';
@@ -211,13 +180,13 @@
 	const zoomIn = () => {
 		if (!panzoomInstance || !svgHost) return;
 		const rect = svgHost.getBoundingClientRect();
-		panzoomInstance.smoothZoom(rect.width / 2, rect.height / 2, 1.2);
+		panzoomInstance.smoothZoom(rect.width / 2, rect.height / 2, 1.5);
 	};
 
 	const zoomOut = () => {
 		if (!panzoomInstance || !svgHost) return;
 		const rect = svgHost.getBoundingClientRect();
-		panzoomInstance.smoothZoom(rect.width / 2, rect.height / 2, 0.8);
+		panzoomInstance.smoothZoom(rect.width / 2, rect.height / 2, 0.67);
 	};
 
 	const resetZoom = () => {
@@ -240,23 +209,6 @@
 	};
 
 	$effect(() => {
-		if (!svgHost) return;
-		const host = svgHost;
-		host.addEventListener('pointerdown', handleTouchPointerDown);
-		host.addEventListener('pointermove', handleTouchPointerMove);
-		host.addEventListener('pointerup', handleTouchPointerUp);
-		host.addEventListener('pointercancel', handleTouchPointerUp);
-		host.addEventListener('pointerleave', handleTouchPointerUp);
-		return () => {
-			host.removeEventListener('pointerdown', handleTouchPointerDown);
-			host.removeEventListener('pointermove', handleTouchPointerMove);
-			host.removeEventListener('pointerup', handleTouchPointerUp);
-			host.removeEventListener('pointercancel', handleTouchPointerUp);
-			host.removeEventListener('pointerleave', handleTouchPointerUp);
-		};
-	});
-
-	$effect(() => {
 		if (!diagramId) return;
 		void loadDiagram(diagramId);
 	});
@@ -272,62 +224,66 @@
 	});
 </script>
 
-<section class="space-y-4">
-	<div class="flex flex-wrap items-center justify-between gap-3 wds-no-print">
-		<div>
-			<p class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+<div class="flex h-full flex-col">
+	<!-- Header with controls -->
+	<div class="flex flex-wrap items-center justify-between gap-3 pb-3 wds-no-print">
+		<div class="min-w-0">
+			<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
 				Diagram
 			</p>
-			<h1 class="text-3xl font-semibold text-slate-900 dark:text-slate-100">
+			<h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100 truncate">
 				{diagramId}
 			</h1>
 			{#if diagramMeta?.title}
-				<p class="mt-1 text-slate-600 dark:text-slate-300">{diagramMeta.title}</p>
+				<p class="text-sm text-slate-600 dark:text-slate-300 truncate">{diagramMeta.title}</p>
 			{/if}
 		</div>
-		<div class="flex flex-wrap items-center gap-2">
+		<div class="flex items-center gap-2">
 			<button
 				onclick={zoomOut}
-				class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700"
+				class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700"
 				type="button"
+				title="Zoom out (or scroll down)"
 			>
-				Zoom out
+				−
 			</button>
 			<button
 				onclick={resetZoom}
-				class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700"
+				class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700"
 				type="button"
+				title="Reset zoom"
 			>
-				Reset
+				1:1
 			</button>
 			<button
 				onclick={zoomIn}
-				class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700"
+				class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700"
 				type="button"
+				title="Zoom in (or scroll up)"
 			>
-				Zoom in
+				+
 			</button>
 			<button
 				onclick={toggleFullscreen}
-				class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700"
+				class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700"
 				type="button"
 			>
-				{isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+				{isFullscreen ? '⛶' : '⛶'}
 			</button>
 		</div>
 	</div>
 
+	<!-- SVG Container -->
 	<div
 		bind:this={svgHost}
-		class="relative h-[calc(100vh-12rem)] min-h-[520px] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 touch-none wds-diagram-container wds-diagram-canvas"
+		class="relative flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 wds-diagram-container"
 	>
 		{#if loading}
 			<div class="flex h-full flex-col items-center justify-center gap-4 px-6">
-				<div class="skeleton h-40 w-40 rounded-full"></div>
-				<div class="w-full max-w-md space-y-3">
-					<div class="skeleton-line w-1/2"></div>
+				<div class="skeleton h-20 w-20 rounded-full"></div>
+				<div class="w-full max-w-xs space-y-2">
+					<div class="skeleton-line w-1/2 mx-auto"></div>
 					<div class="skeleton-line"></div>
-					<div class="skeleton-line w-5/6"></div>
 				</div>
 			</div>
 		{:else if error}
@@ -335,14 +291,18 @@
 				{error}
 			</div>
 		{:else if svgMarkup}
-			<div class="h-full w-full [&_svg]:h-full [&_svg]:w-full [&_svg]:max-w-none">
+			<div class="h-full w-full overflow-hidden">
 				<!-- eslint-disable svelte/no-at-html-tags -->
 				{@html svgMarkup}
 				<!-- eslint-enable svelte/no-at-html-tags -->
 			</div>
 		{/if}
 	</div>
-</section>
+	
+	<p class="mt-2 text-xs text-slate-400 dark:text-slate-500 wds-no-print">
+		Scroll to zoom • Drag to pan • Click links to navigate
+	</p>
+</div>
 
 <style>
 	:global(.wds-diagram-link) {
@@ -351,7 +311,13 @@
 
 	:global(.wds-diagram-link.wds-link-hover *),
 	:global(.wds-diagram-link:hover *) {
-		stroke: #38bdf8;
+		stroke: #38bdf8 !important;
 		stroke-width: 2;
+	}
+	
+	:global(.wds-diagram-container svg) {
+		display: block;
+		max-width: none !important;
+		max-height: none !important;
 	}
 </style>

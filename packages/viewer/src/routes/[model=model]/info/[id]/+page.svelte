@@ -4,7 +4,6 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { compile as mdsvexCompile } from 'mdsvex';
-	import { SvelteSet } from 'svelte/reactivity';
 	import { compile as svelteCompile } from 'svelte/compiler';
 	import type { ComponentType } from 'svelte';
 	import type {
@@ -49,7 +48,7 @@
 	};
 
 	const extractDiagramIds = (markdown: string): string[] => {
-		const ids = new SvelteSet<string>();
+		const ids = new Set<string>();
 		const hrefRegex = /href=["']([^"']+)["']/gi;
 		const mdLinkRegex = /\]\(([^)]+)\)/g;
 		const svgRegex = /([A-Za-z0-9_-]+)\.svgz?/gi;
@@ -234,130 +233,99 @@
 	});
 </script>
 
-<section class="space-y-6">
-	<div class="flex flex-wrap items-center justify-between gap-4">
-		<div>
-			<p class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-				Info page
-			</p>
-			<h1 class="text-3xl font-semibold text-slate-900 dark:text-slate-100">
-				{infoMeta?.title ?? infoId}
-			</h1>
-			{#if infoMeta?.title && infoMeta.title !== infoId}
-				<p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{infoId}</p>
-			{/if}
-		</div>
+<div class="flex h-full flex-col overflow-hidden">
+	<!-- Header -->
+	<div class="pb-3 flex-shrink-0">
+		<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+			Info
+		</p>
+		<h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100 truncate">
+			{infoMeta?.title ?? infoId}
+		</h1>
 	</div>
 
-	<div class="flex flex-col gap-8 lg:flex-row">
-		{#if sections.length || relatedDiagrams.length}
-			<aside class="lg:w-64 space-y-4">
-				{#if relatedDiagrams.length}
-					<div
-						class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900"
-					>
-						<p
-							class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
-						>
-							Related diagrams
-						</p>
-						<ul class="mt-3 space-y-3 text-slate-700 dark:text-slate-200">
-							{#each relatedDiagrams as diagram (diagram.id)}
-								<li class="space-y-2">
-									<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">
-										{diagram.meta?.title ?? diagram.id}
-									</p>
-									<p class="text-xs text-slate-500 dark:text-slate-400">{diagram.id}</p>
-									{#if diagram.references.length}
-										<div class="flex flex-wrap gap-2">
-											{#each diagram.references as ref (ref.model)}
-												<a
-													href={resolve(`/${ref.model}/diagram/${diagram.id}`)}
-													class="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-400"
-												>
-													{ref.model} ({ref.occurrences})
-												</a>
-											{/each}
-										</div>
-									{:else}
-										<a
-											href={resolve(`/${modelId}/diagram/${diagram.id}`)}
-											class="text-xs font-medium text-slate-600 transition hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400"
-										>
-											Open diagram
-										</a>
-									{/if}
-								</li>
-							{/each}
-						</ul>
-					</div>
-				{/if}
-				{#if sections.length}
-					<div
-						class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900"
-					>
-						<p
-							class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400"
-						>
-							Sections
-						</p>
-						<ul class="mt-3 space-y-2 text-slate-700 dark:text-slate-200">
-							{#each sections as section (section.id)}
-								<li
-									class={section.level === 3
-										? 'pl-4 text-sm text-slate-600 dark:text-slate-300'
-										: ''}
-								>
-									<a href={`#${section.id}`} class="hover:text-sky-500">
-										{section.title}
-									</a>
-								</li>
-							{/each}
-						</ul>
-					</div>
-				{/if}
-			</aside>
-		{/if}
-
-		<div class="min-w-0 flex-1">
-			{#if loading}
-				<div
-					class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-				>
-					<div class="space-y-4">
-						<div class="skeleton-line w-1/3"></div>
-						<div class="skeleton-line h-6 w-2/3"></div>
-						<div class="space-y-2">
-							<div class="skeleton-line"></div>
-							<div class="skeleton-line w-11/12"></div>
-							<div class="skeleton-line w-5/6"></div>
-							<div class="skeleton-line w-3/4"></div>
-						</div>
+	<!-- Content -->
+	<div class="flex-1 min-h-0 overflow-y-auto">
+		{#if loading}
+			<div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+				<div class="space-y-4">
+					<div class="skeleton-line w-1/3"></div>
+					<div class="skeleton-line h-6 w-2/3"></div>
+					<div class="space-y-2">
+						<div class="skeleton-line"></div>
+						<div class="skeleton-line w-11/12"></div>
+						<div class="skeleton-line w-5/6"></div>
 					</div>
 				</div>
-			{:else if error}
-				<div
-					class="rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200"
-				>
-					{error}
-				</div>
-			{:else if MarkdownComponent}
+			</div>
+		{:else if error}
+			<div class="rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-600 dark:border-rose-900/40 dark:bg-rose-950/40 dark:text-rose-200">
+				{error}
+			</div>
+		{:else if MarkdownComponent}
+			<div class="flex gap-6">
+				<!-- Main content -->
 				<div
 					bind:this={markdownHost}
-					class="info-markdown prose max-w-none rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:prose-invert prose-slate"
+					class="info-markdown prose max-w-none flex-1 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:prose-invert prose-slate"
 				>
 					<MarkdownComponent />
 				</div>
-			{:else}
-				<div
-					class="rounded-xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
-				>
-					No content available.
-				</div>
-			{/if}
-		</div>
+				
+				<!-- Sidebar (sections + related diagrams) -->
+				{#if sections.length || relatedDiagrams.length}
+					<aside class="w-56 flex-shrink-0 space-y-4">
+						{#if sections.length}
+							<div class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900">
+								<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+									Sections
+								</p>
+								<ul class="mt-3 space-y-2 text-slate-700 dark:text-slate-200">
+									{#each sections as section (section.id)}
+										<li class={section.level === 3 ? 'pl-3 text-xs text-slate-500' : 'text-sm'}>
+											<a href={`#${section.id}`} class="hover:text-sky-500 truncate block">
+												{section.title}
+											</a>
+										</li>
+									{/each}
+								</ul>
+							</div>
+						{/if}
+						
+						{#if relatedDiagrams.length}
+							<div class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900">
+								<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+									Diagrams
+								</p>
+								<ul class="mt-3 space-y-2">
+									{#each relatedDiagrams.slice(0, 5) as diagram (diagram.id)}
+										<li>
+											<a
+												href={resolve(`/${modelId}/diagram/${diagram.id}`)}
+												class="text-sm text-slate-700 hover:text-sky-500 dark:text-slate-300 truncate block"
+											>
+												{diagram.meta?.title ?? diagram.id}
+											</a>
+										</li>
+									{/each}
+									{#if relatedDiagrams.length > 5}
+										<li class="text-xs text-slate-400">
+											+{relatedDiagrams.length - 5} more
+										</li>
+									{/if}
+								</ul>
+							</div>
+						{/if}
+					</aside>
+				{/if}
+			</div>
+		{:else}
+			<div class="rounded-xl border border-slate-200 bg-white p-6 text-slate-500 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+				No content available.
+			</div>
+		{/if}
 	</div>
-</section>
+</div>
 
 <style>
 	:global(.info-markdown table) {

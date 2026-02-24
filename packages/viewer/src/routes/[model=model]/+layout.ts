@@ -1,7 +1,7 @@
-import type { PageLoad } from './$types';
+import type { LayoutLoad } from './$types';
 import { loadModelTree } from '$lib/data/loaders';
 
-export const load: PageLoad = ({ fetch, params }) => {
+export const load: LayoutLoad = ({ fetch, params }) => {
 	return {
 		treePromise: loadModelTree(fetch, params.model)
 	};
