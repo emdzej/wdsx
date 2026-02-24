@@ -5,6 +5,7 @@
 	import { onDestroy, onMount, tick } from 'svelte';
 	import panzoom from 'panzoom';
 	import type { DiagramMeta, DiagramsIndex } from '@emdzej/wds-core';
+	import { treeSearchQuery } from '$lib/stores/search';
 
 	let svgMarkup = $state<string | null>(null);
 	let loading = $state(true);
@@ -51,7 +52,6 @@
 	const setupPanzoom = (svg: SVGSVGElement) => {
 		panzoomInstance?.dispose();
 		
-		// Important: panzoom needs the SVG to have proper dimensions
 		svg.style.width = '100%';
 		svg.style.height = '100%';
 		svg.style.maxWidth = 'none';
@@ -64,9 +64,7 @@
 			bounds: false,
 			boundsPadding: 0.1,
 			smoothScroll: false,
-			// Enable mouse wheel zoom
 			beforeWheel: () => false,
-			// Filter touch events to allow pinch zoom
 			filterKey: () => true
 		});
 	};
@@ -89,7 +87,8 @@
 		if (href.startsWith('javascript:')) {
 			const searchId = parseSearchLink(href);
 			if (searchId) {
-				void goto(resolve(`/search?component=${encodeURIComponent(searchId)}`));
+				// Set search query in tree (handled by layout)
+				treeSearchQuery.set(searchId);
 				return;
 			}
 		}
@@ -157,7 +156,6 @@
 			svgMarkup = markup;
 			await tick();
 			
-			// Wait for DOM update
 			requestAnimationFrame(() => {
 				const svg = svgHost?.querySelector('svg');
 				if (!svg) return;

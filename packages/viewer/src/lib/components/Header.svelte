@@ -1,11 +1,8 @@
 <script lang="ts">
 	import type { ModelMeta } from '@emdzej/wds-core';
-	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { page } from '$app/stores';
 	import DarkModeToggle from './DarkModeToggle.svelte';
-	import SearchInput from './SearchInput.svelte';
 
 	let {
 		models = [],
@@ -17,14 +14,13 @@
 		onToggleSidebar?: () => void;
 	}>();
 
-	const pageQuery = $derived(browser ? ($page.url.searchParams.get('q') ?? '') : '');
-
-	const toPathname = (path: string) => path as App.Pathname;
-
-	const handleSearch = (query: string) => {
-		const trimmed = query.trim();
-		const target = trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : '/search';
-		void goto(resolve(toPathname(target)));
+	const handleModelChange = (e: Event) => {
+		const select = e.target as HTMLSelectElement;
+		const newModelId = select.value;
+		if (newModelId && newModelId !== selectedModelId) {
+			selectedModelId = newModelId;
+			void goto(resolve(`/${newModelId}`));
+		}
 	};
 </script>
 
@@ -58,13 +54,7 @@
 				<h1 class="text-lg font-semibold text-slate-900 dark:text-white">Wiring Diagram System</h1>
 			</div>
 		</div>
-		<div class="flex flex-1 flex-wrap items-center justify-end gap-3">
-			<SearchInput
-				class="w-full md:w-64 lg:w-80"
-				value={pageQuery}
-				placeholder="Search diagrams & info…"
-				onSearch={handleSearch}
-			/>
+		<div class="flex items-center gap-3">
 			<label class="text-sm font-medium text-slate-500 dark:text-slate-400" for="model-select">
 				Model
 			</label>
@@ -72,6 +62,7 @@
 				id="model-select"
 				class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:focus:border-blue-500 dark:focus:ring-blue-500/40"
 				bind:value={selectedModelId}
+				onchange={handleModelChange}
 			>
 				{#if models.length === 0}
 					<option value="" disabled>Loading models…</option>

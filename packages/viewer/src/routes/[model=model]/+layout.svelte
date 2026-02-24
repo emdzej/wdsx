@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import type { ModelTree, TreeNode as TreeNodeType } from '@emdzej/wds-core';
 	import TreeNode from '$lib/components/TreeNode.svelte';
+	import { treeSearchQuery } from '$lib/stores/search';
 
 	let { children, data } = $props<{ 
 		children: () => unknown;
@@ -60,7 +61,6 @@
 
 	// Search functions
 	const flattenTree = (node: TreeNodeType, acc: TreeNodeType[] = []): TreeNodeType[] => {
-		// Only add leaf nodes (with diagram or info)
 		if (node.type === 'leaf' && (node.diagram || node.info)) {
 			acc.push(node);
 		}
@@ -78,10 +78,9 @@
 		const lowerQuery = query.toLowerCase();
 		return allLeaves
 			.filter(node => node.name.toLowerCase().includes(lowerQuery))
-			.slice(0, 10); // Limit results
+			.slice(0, 10);
 	};
 
-	// Find path to node for expanding parents
 	const findPathToNode = (root: TreeNodeType, targetId: string, path: string[] = []): string[] | null => {
 		if (root.id === targetId) return path;
 		if (root.children) {
@@ -94,7 +93,6 @@
 	};
 
 	const navigateToNode = (node: TreeNodeType) => {
-		// Expand all parent folders
 		if (treeData) {
 			const path = findPathToNode(treeData.tree, node.id);
 			if (path) {
@@ -106,14 +104,12 @@
 			}
 		}
 		
-		// Navigate to the node
 		if (node.diagram) {
 			void goto(resolve(`/${modelId}/diagram/${node.diagram}`));
 		} else if (node.info) {
 			void goto(resolve(`/${modelId}/info/${node.info}`));
 		}
 		
-		// Clear search
 		searchQuery = '';
 		searchResults = [];
 	};
@@ -142,11 +138,34 @@
 		}
 	};
 
-	// Load tree data for search
+	// Load tree data
 	$effect(() => {
 		data.treePromise.then(tree => {
 			treeData = tree;
 		}).catch(() => {});
+	});
+
+	// React to search from diagram clicks
+	$effect(() => {
+		const unsubscribe = treeSearchQuery.subscribe(query => {
+			if (query && treeData) {
+				searchQuery = query;
+				const results = searchTree(query);
+				if (results.length === 1) {
+					// Exact match - navigate directly
+					navigateToNode(results[0]);
+					treeSearchQuery.set('');
+				} else if (results.length > 1) {
+					// Multiple matches - show dropdown
+					searchResults = results;
+					selectedResultIndex = 0;
+				} else {
+					// No results - just show the query
+					searchResults = [];
+				}
+			}
+		});
+		return unsubscribe;
 	});
 </script>
 
