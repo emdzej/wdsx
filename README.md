@@ -45,6 +45,8 @@ First, import your WDS source data:
 pnpm --filter @emdzej/wds-importer import --source /path/to/wds --output packages/viewer/static/data
 ```
 
+> **Note** source must point to the release folder on WDS disc!
+
 This creates:
 - `models.json` — vehicle model metadata
 - `diagrams/` — SVG/SVGZ files + index.json
