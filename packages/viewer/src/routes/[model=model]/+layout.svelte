@@ -18,9 +18,15 @@
 	let searchResults = $state<TreeNodeType[]>([]);
 	let selectedResultIndex = $state(0);
 	let treeData = $state<ModelTree | null>(null);
+	
+	// Resizable panel
+	let sidebarWidth = $state(320);
+	let isResizing = $state(false);
+	let containerRef: HTMLDivElement | null = null;
 
 	const modelId = $derived($page.params.model ?? '');
 	const getStorageKey = (id: string) => `wds-viewer-tree:${id}`;
+	const SIDEBAR_WIDTH_KEY = 'wds-viewer-sidebar-width';
 
 	const loadExpandedIds = (id: string): string[] => {
 		if (!browser) return [];
@@ -39,6 +45,19 @@
 		} catch {}
 	};
 
+	// Load saved sidebar width
+	$effect(() => {
+		if (browser) {
+			const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+			if (saved) {
+				const width = parseInt(saved, 10);
+				if (width >= 200 && width <= 600) {
+					sidebarWidth = width;
+				}
+			}
+		}
+	});
+
 	$effect(() => {
 		if (browser && modelId && loadedModelId !== modelId) {
 			loadedModelId = modelId;
@@ -56,6 +75,31 @@
 		}
 		if (modelId) {
 			persistExpandedIds(modelId, expandedIds);
+		}
+	};
+
+	// Resize handlers
+	const startResize = (e: MouseEvent) => {
+		e.preventDefault();
+		isResizing = true;
+		document.addEventListener('mousemove', handleResize);
+		document.addEventListener('mouseup', stopResize);
+	};
+
+	const handleResize = (e: MouseEvent) => {
+		if (!isResizing || !containerRef) return;
+		const containerRect = containerRef.getBoundingClientRect();
+		const newWidth = e.clientX - containerRect.left;
+		sidebarWidth = Math.max(200, Math.min(600, newWidth));
+	};
+
+	const stopResize = () => {
+		isResizing = false;
+		document.removeEventListener('mousemove', handleResize);
+		document.removeEventListener('mouseup', stopResize);
+		// Save width
+		if (browser) {
+			localStorage.setItem(SIDEBAR_WIDTH_KEY, String(sidebarWidth));
 		}
 	};
 
@@ -152,15 +196,12 @@
 				searchQuery = query;
 				const results = searchTree(query);
 				if (results.length === 1) {
-					// Exact match - navigate directly
 					navigateToNode(results[0]);
 					treeSearchQuery.set('');
 				} else if (results.length > 1) {
-					// Multiple matches - show dropdown
 					searchResults = results;
 					selectedResultIndex = 0;
 				} else {
-					// No results - just show the query
 					searchResults = [];
 				}
 			}
@@ -169,9 +210,12 @@
 	});
 </script>
 
-<div class="flex gap-6 h-[calc(100vh-10rem)]">
+<div bind:this={containerRef} class="flex h-[calc(100vh-10rem)]" class:select-none={isResizing}>
 	<!-- Left panel: Search + Tree navigation -->
-	<aside class="w-80 flex-shrink-0 overflow-hidden flex flex-col">
+	<aside 
+		class="flex-shrink-0 overflow-hidden flex flex-col"
+		style="width: {sidebarWidth}px"
+	>
 		<div class="mb-3">
 			<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
 				{modelId}
@@ -247,8 +291,18 @@
 		</div>
 	</aside>
 
+	<!-- Resize handle -->
+	<div
+		class="w-2 flex-shrink-0 cursor-col-resize group flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+		onmousedown={startResize}
+		role="separator"
+		aria-orientation="vertical"
+	>
+		<div class="w-0.5 h-8 rounded-full bg-slate-300 group-hover:bg-slate-400 dark:bg-slate-600 dark:group-hover:bg-slate-500 transition-colors"></div>
+	</div>
+
 	<!-- Right panel: Content viewer -->
-	<main class="flex-1 min-w-0 overflow-hidden">
+	<main class="flex-1 min-w-0 overflow-hidden pl-4">
 		{@render children()}
 	</main>
 </div>
