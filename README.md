@@ -1,100 +1,102 @@
-# WDS - BMW Wiring Diagram System
+# WDS Viewer
 
-Modern web application port of the legacy BMW WDS (Wiring Diagram System) Java applet.
+Modern web viewer for BMW WDS (Wiring Diagram System) data. Replaces the legacy Java applet-based system with a fast, responsive SvelteKit application.
 
-## About
+## Features
 
-WDS is BMW's classic wiring diagram system that originally ran as Java applets in old browsers. This project aims to create a modern, web-based version that preserves all the functionality while providing a better user experience.
+- 📁 **Tree Navigation** — hierarchical browsing of diagrams and info pages
+- 🔍 **Search** — find diagrams and info pages by name
+- 🖼️ **SVG Diagrams** — pan, zoom, and interact with wiring diagrams
+- 📝 **Info Pages** — rendered markdown with images
+- 🔗 **Diagram Links** — click links in diagrams to navigate or search
+- 🌙 **Dark Mode** — system-aware theme switching
+- 📱 **Resizable Panels** — adjustable tree/viewer split
+- 💾 **PWA Ready** — installable, works offline (with cached data)
 
-## Project Status
-
-🚧 **In Planning Phase** - Data analysis and architecture design in progress.
-
-## Source Data
-
-- **Format**: Legacy Java applet data structure
-- **Content**:
-  - ~24,000 SVGZ wiring diagrams
-  - ~20,000 HTML information pages
-  - 14 XML tree structure files
-  - Vehicle models: E38, E39, E46, E52, E53, E60, E61, E63, E64, E65, E66, E70, E71, E83, E85, E87, E89, E90, F01
-  - Languages: US (English), DE (German), and others
-
-## Tech Stack
-
-- **Language**: TypeScript
-- **Monorepo**: pnpm + Turborepo
-- **Importer**: Node.js-based data transformation pipeline
-- **Viewer**: SvelteKit (planned)
-- **Target Format**: JSON + optimized SVG + Markdown
-
-## Repository Structure
+## Project Structure
 
 ```
-wds/
-├── apps/
-│   └── viewer/           # SvelteKit viewer application
+wdsx/
 ├── packages/
-│   ├── core/             # Shared types and utilities
-│   └── importer/         # Data import tool (TypeScript)
-├── tools/                # Scripts and utilities
-├── data/                 # Processed data (gitignored, generated)
-└── docs/                 # Documentation and analysis
+│   ├── core/          # Shared TypeScript types
+│   ├── importer/      # Data import tool (WDS → JSON/SVG/MD)
+│   └── viewer/        # SvelteKit web application
+└── docs/              # Documentation
 ```
 
-## Development
+## Quick Start
+
+### Prerequisites
+
+- Node.js 22+
+- pnpm 9+
+
+### Install
 
 ```bash
 pnpm install
+```
+
+### Import WDS Data
+
+First, import your WDS source data:
+
+```bash
+pnpm --filter @emdzej/wds-importer import --source /path/to/wds --output packages/viewer/static/data
+```
+
+This creates:
+- `models.json` — vehicle model metadata
+- `diagrams/` — SVG/SVGZ files + index.json
+- `info/` — Markdown files + index.json  
+- `trees/` — navigation tree per model
+- `zi_images/` — info page images
+
+### Development
+
+```bash
+pnpm dev
+```
+
+Opens viewer at http://localhost:5173
+
+### Build
+
+```bash
 pnpm build
-pnpm test
-pnpm lint
-pnpm typecheck
 ```
 
-### Importer Commands
+Static output: `packages/viewer/build/`
 
-```bash
-pnpm import
-pnpm import:dry
-pnpm validate
-pnpm stats
+## Data Directory
+
+The viewer expects data in `static/data/`. Structure:
+
+```
+static/data/
+├── models.json
+├── diagrams/
+│   ├── index.json
+│   └── *.svgz
+├── info/
+│   ├── index.json
+│   └── *.md
+├── trees/
+│   └── <model-id>.json
+└── zi_images/
+    └── *.png
 ```
 
-## Viewer (SvelteKit)
+**Note:** WDS data is not included. You must provide your own BMW WDS source files.
 
-The viewer is a static app shell. **BMW WDS data is not included** and must be provided at runtime.
+## Tech Stack
 
-### Run locally
-
-```bash
-pnpm --filter viewer dev
-```
-
-Data is loaded from `/data` by default. To test locally, either:
-
-- Serve your generated data at `/data`, or
-- Copy/symlink it into `packages/viewer/static/data`.
-
-You can also override the data base path:
-
-```bash
-VITE_WDS_DATA_BASE="/my-data" pnpm --filter viewer dev
-```
-
-### Build (static)
-
-```bash
-pnpm --filter viewer build
-```
-
-Static output: `packages/viewer/build`.
-
-### GitHub Pages
-
-The workflow publishes the viewer to GitHub Pages with `BASE_PATH=/wds`.
-Make sure your data is available at `${BASE_PATH}/data` when deploying.
+- **Framework:** SvelteKit 2 + Svelte 5
+- **Styling:** Tailwind CSS
+- **Build:** Vite + Turborepo
+- **SVG Interaction:** panzoom
+- **Markdown:** marked
 
 ## License
 
-This is a personal project for educational and archival purposes. Original BMW data remains property of BMW AG.
+MIT. Original BMW WDS data is property of BMW AG.
