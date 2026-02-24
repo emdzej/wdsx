@@ -46,6 +46,7 @@
 	};
 
 	const extractDiagramIds = (markdown: string): string[] => {
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- local Set, not reactive
 		const ids = new Set<string>();
 		const hrefRegex = /href=["']([^"']+)["']/gi;
 		const mdLinkRegex = /\]\(([^)]+)\)/g;
@@ -261,6 +262,7 @@
 					bind:this={markdownHost}
 					class="info-markdown prose max-w-none flex-1 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:prose-invert prose-slate"
 				>
+					<!-- eslint-disable-next-line svelte/no-at-html-tags -- safe: rendered markdown from local files -->
 					{@html htmlContent}
 				</div>
 

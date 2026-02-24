@@ -42,7 +42,9 @@
 		if (!browser) return;
 		try {
 			localStorage.setItem(getStorageKey(id), JSON.stringify(ids));
-		} catch {}
+		} catch {
+			// Ignore localStorage errors (quota exceeded, etc.)
+		}
 	};
 
 	// Load saved sidebar width
