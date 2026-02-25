@@ -5,7 +5,7 @@
 	import { page } from '$app/stores';
 	import type { ModelTree, TreeNode as TreeNodeType } from '@emdzej/wds-core';
 	import TreeNode from '$lib/components/TreeNode.svelte';
-	import { treeSearchQuery } from '$lib/stores/search';
+	import { treeSearchQuery, selectedItem } from '$lib/stores/search';
 
 	let { children, data } = $props<{
 		children: () => unknown;
@@ -140,6 +140,41 @@
 		return null;
 	};
 
+	// Find node by diagram or info id and return path to it
+	const findNodeByItemId = (
+		root: TreeNodeType,
+		type: 'diagram' | 'info',
+		itemId: string,
+		path: string[] = []
+	): { node: TreeNodeType; path: string[] } | null => {
+		if (type === 'diagram' && root.diagram === itemId) {
+			return { node: root, path };
+		}
+		if (type === 'info' && root.info === itemId) {
+			return { node: root, path };
+		}
+		if (root.children) {
+			for (const child of root.children) {
+				const found = findNodeByItemId(child, type, itemId, [...path, root.id]);
+				if (found) return found;
+			}
+		}
+		return null;
+	};
+
+	// Expand tree to show a specific node
+	const expandToItem = (type: 'diagram' | 'info', itemId: string) => {
+		if (!treeData) return;
+		const result = findNodeByItemId(treeData.tree, type, itemId);
+		if (result) {
+			const newExpanded = [...new Set([...expandedIds, ...result.path])];
+			expandedIds = newExpanded;
+			if (modelId) {
+				persistExpandedIds(modelId, newExpanded);
+			}
+		}
+	};
+
 	const navigateToNode = (node: TreeNodeType) => {
 		if (treeData) {
 			const path = findPathToNode(treeData.tree, node.id);
@@ -210,6 +245,17 @@
 				} else {
 					searchResults = [];
 				}
+			}
+		});
+		return unsubscribe;
+	});
+
+	// React to selected item from global search - expand tree to show it
+	$effect(() => {
+		const unsubscribe = selectedItem.subscribe((item) => {
+			if (item && treeData) {
+				expandToItem(item.type, item.id);
+				selectedItem.set(null); // Clear after expanding
 			}
 		});
 		return unsubscribe;

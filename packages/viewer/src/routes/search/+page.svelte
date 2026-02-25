@@ -16,6 +16,7 @@
 	} from '@emdzej/wds-core';
 	import { loadComponentsIndex, loadDiagramsIndex, loadInfoIndex } from '$lib/data/loaders';
 	import SearchInput from '$lib/components/SearchInput.svelte';
+	import { selectedItem } from '$lib/stores/search';
 
 	type SearchItemType = 'diagram' | 'info';
 
@@ -227,6 +228,10 @@
 
 	const linkPath = (item: SearchItem, modelId: string) =>
 		`/${modelId}/${item.type === 'diagram' ? 'diagram' : 'info'}/${item.id}`;
+
+	const handleResultClick = (item: SearchItem) => {
+		selectedItem.set({ type: item.type, id: item.id });
+	};
 </script>
 
 <section class="space-y-6">
@@ -386,6 +391,7 @@
 										{#each item.referencedBy as ref (ref.model)}
 											<a
 												href={resolve(toPathname(linkPath(item, ref.model)))}
+												onclick={() => handleResultClick(item)}
 												class="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-400"
 											>
 												{ref.model} ({ref.occurrences})
@@ -421,6 +427,7 @@
 										{#each item.referencedBy as ref (ref.model)}
 											<a
 												href={resolve(toPathname(linkPath(item, ref.model)))}
+												onclick={() => handleResultClick(item)}
 												class="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-blue-300 hover:text-blue-600 dark:border-slate-700 dark:text-slate-300 dark:hover:border-blue-500 dark:hover:text-blue-400"
 											>
 												{ref.model} ({ref.occurrences})
