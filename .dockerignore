@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+packages/*/dist/
+packages/viewer/build/
+packages/viewer/.svelte-kit/
+
+# Data (mounted at runtime)
+data/
+packages/viewer/static/data/
+
+# Development
+.git/
+.github/
+*.md
+!README.md
+.env*
+.vscode/
+.idea/
+
+# Turbo
+.turbo/
+
+# Misc
+*.log
+*.tgz
+coverage/
+.DS_Store
+Thumbs.db
