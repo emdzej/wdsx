@@ -17,17 +17,16 @@ const config = {
 		}),
 		paths: {
 			base: basePath
+		},
+		prerender: {
+			handleHttpError: ({ status, path }) => {
+				// Ignore 404s for data files (not included in repo)
+				if (status === 404 && path.startsWith('/data/')) {
+					return;
+				}
+				throw new Error(`Prerender failed: ${status} ${path}`);
+			}
 		}
-		// prerender: {
-		// 	entries: ['*'],
-		// 	handleHttpError: ({ status, path }) => {
-		// 		if (status === 404 && path.startsWith('/data/')) {
-		// 			return;
-		// 		}
-		// 		throw new Error(`Prerender request failed with ${status} for ${path}`);
-		// 	},
-		// 	handleUnseenRoutes: 'ignore'
-		// }
 	}
 };
 
