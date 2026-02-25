@@ -52,8 +52,8 @@ server {
         add_header Cache-Control "public, immutable";
     }
 
-    # Data directory (mounted volume)
-    location /data/ {
+    # Data directory (mounted volume) - ^~ gives priority over regex
+    location ^~ /data/ {
         alias /data/;
         expires 1d;
         add_header Cache-Control "public";
