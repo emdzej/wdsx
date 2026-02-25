@@ -6,6 +6,7 @@
 	import type { ModelTree, TreeNode as TreeNodeType } from '@emdzej/wds-core';
 	import TreeNode from '$lib/components/TreeNode.svelte';
 	import { treeSearchQuery, selectedItem } from '$lib/stores/search';
+	import { initFavorites } from '$lib/stores/favorites';
 
 	let { children, data } = $props<{
 		children: () => unknown;
@@ -64,6 +65,7 @@
 		if (browser && modelId && loadedModelId !== modelId) {
 			loadedModelId = modelId;
 			expandedIds = loadExpandedIds(modelId);
+			initFavorites(modelId);
 		}
 	});
 

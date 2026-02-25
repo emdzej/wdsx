@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import DarkModeToggle from './DarkModeToggle.svelte';
+	import FavoritesDropdown from './FavoritesDropdown.svelte';
 
 	let {
 		models = [],
@@ -72,6 +73,7 @@
 					{/each}
 				{/if}
 			</select>
+			<FavoritesDropdown />
 			<DarkModeToggle />
 		</div>
 	</div>
