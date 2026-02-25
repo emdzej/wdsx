@@ -25,7 +25,8 @@ const config = {
 					return;
 				}
 				throw new Error(`Prerender failed: ${status} ${path}`);
-			}
+			},
+			handleUnseenRoutes: 'ignore'
 		}
 	}
 };
