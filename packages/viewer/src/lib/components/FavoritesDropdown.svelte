@@ -116,10 +116,13 @@
 						<ul class="py-1">
 							{#each filteredFavorites() as item (item.type + ':' + item.id)}
 								<li>
-									<button
-										type="button"
+									<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+									<div
+										role="button"
+										tabindex="0"
 										onclick={() => navigateToItem(item)}
-										class="group flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
+										onkeydown={(e) => e.key === 'Enter' && navigateToItem(item)}
+										class="group flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
 									>
 										{#if item.type === 'diagram'}
 											<svg
@@ -166,7 +169,7 @@
 												/>
 											</svg>
 										</button>
-									</button>
+									</div>
 								</li>
 							{/each}
 						</ul>
