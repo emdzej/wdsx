@@ -317,5 +317,20 @@
 		display: block;
 		max-width: none !important;
 		max-height: none !important;
+		/* Crisp SVG rendering at any zoom level */
+		shape-rendering: geometricPrecision;
+		text-rendering: geometricPrecision;
+	}
+
+	:global(.wds-diagram-container svg *) {
+		/* Prevent stroke scaling on zoom */
+		vector-effect: non-scaling-stroke;
+	}
+
+	:global(.wds-diagram-container) {
+		/* Force crisp rendering for transformed content */
+		image-rendering: -webkit-optimize-contrast;
+		image-rendering: crisp-edges;
+		-webkit-font-smoothing: none;
 	}
 </style>
