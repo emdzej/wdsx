@@ -7,6 +7,7 @@
 	import type { DiagramMeta, DiagramsIndex } from '@emdzej/wds-core';
 	import { treeSearchQuery } from '$lib/stores/search';
 	import { favorites, toggleFavorite } from '$lib/stores/favorites';
+	import { labelScale } from '$lib/stores/settings';
 
 	let svgMarkup = $state<string | null>(null);
 	let loading = $state(true);
@@ -288,6 +289,22 @@
 			>
 				{isFullscreen ? '⛶' : '⛶'}
 			</button>
+			<div class="flex items-center gap-2 ml-2 pl-2 border-l border-slate-200 dark:border-slate-700">
+				<label class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400" title="Label size">
+					<svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+						<path d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" />
+					</svg>
+					<input
+						type="range"
+						min="50"
+						max="200"
+						step="25"
+						bind:value={$labelScale}
+						class="w-20 h-1.5 accent-sky-500"
+					/>
+					<span class="w-8 text-right tabular-nums">{$labelScale}%</span>
+				</label>
+			</div>
 		</div>
 	</div>
 
@@ -295,6 +312,7 @@
 	<div
 		bind:this={svgHost}
 		class="relative flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 wds-diagram-container"
+		style="--label-scale: {$labelScale / 100}"
 	>
 		{#if loading}
 			<div class="flex h-full flex-col items-center justify-center gap-4 px-6">
@@ -352,5 +370,18 @@
 		image-rendering: -webkit-optimize-contrast;
 		image-rendering: crisp-edges;
 		-webkit-font-smoothing: none;
+	}
+
+	/* Scalable text labels - wire labels, component names, etc. */
+	:global(.wds-diagram-container svg text.t1) {
+		font-size: calc(31 * var(--label-scale, 1)) !important;
+	}
+
+	:global(.wds-diagram-container svg text.t2) {
+		font-size: calc(42 * var(--label-scale, 1)) !important;
+	}
+
+	:global(.wds-diagram-container svg text.t3) {
+		font-size: calc(12 * var(--label-scale, 1)) !important;
 	}
 </style>
