@@ -116,7 +116,6 @@
 						<ul class="py-1">
 							{#each filteredFavorites() as item (item.type + ':' + item.id)}
 								<li>
-									<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 									<div
 										role="button"
 										tabindex="0"
