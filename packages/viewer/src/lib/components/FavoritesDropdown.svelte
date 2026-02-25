@@ -10,13 +10,12 @@
 
 	const modelId = $derived($currentModelId);
 	const allFavorites = $derived($favorites);
-	
+
 	const filteredFavorites = $derived(() => {
 		if (!searchQuery.trim()) return allFavorites;
 		const query = searchQuery.toLowerCase();
-		return allFavorites.filter((item) => 
-			item.name.toLowerCase().includes(query) || 
-			item.id.toLowerCase().includes(query)
+		return allFavorites.filter(
+			(item) => item.name.toLowerCase().includes(query) || item.id.toLowerCase().includes(query)
 		);
 	});
 
@@ -34,9 +33,8 @@
 
 	const navigateToItem = (item: { type: 'diagram' | 'info'; id: string }) => {
 		selectedItem.set({ type: item.type, id: item.id });
-		const path = item.type === 'diagram' 
-			? `/${modelId}/diagram/${item.id}`
-			: `/${modelId}/info/${item.id}`;
+		const path =
+			item.type === 'diagram' ? `/${modelId}/diagram/${item.id}` : `/${modelId}/info/${item.id}`;
 		void goto(resolve(path as `/${string}`));
 		isOpen = false;
 		searchQuery = '';
@@ -68,11 +66,15 @@
 			title="Favorites"
 		>
 			<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-				<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+				<path
+					d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+				/>
 			</svg>
 			<span class="hidden sm:inline">Favorites</span>
 			{#if allFavorites.length > 0}
-				<span class="ml-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-xs font-semibold text-sky-700 dark:bg-sky-900/50 dark:text-sky-300">
+				<span
+					class="ml-1 rounded-full bg-sky-100 px-1.5 py-0.5 text-xs font-semibold text-sky-700 dark:bg-sky-900/50 dark:text-sky-300"
+				>
 					{allFavorites.length}
 				</span>
 			{/if}
@@ -95,10 +97,16 @@
 					{#if filteredFavorites().length === 0}
 						<div class="p-6 text-center text-sm text-slate-500 dark:text-slate-400">
 							{#if allFavorites.length === 0}
-								<svg class="mx-auto mb-2 h-8 w-8 text-slate-300 dark:text-slate-600" viewBox="0 0 20 20" fill="currentColor">
-									<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+								<svg
+									class="mx-auto mb-2 h-8 w-8 text-slate-300 dark:text-slate-600"
+									viewBox="0 0 20 20"
+									fill="currentColor"
+								>
+									<path
+										d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+									/>
 								</svg>
-								No favorites yet.<br/>
+								No favorites yet.<br />
 								<span class="text-xs">Click ★ on diagrams or info pages to add.</span>
 							{:else}
 								No matches found.
@@ -114,12 +122,26 @@
 										class="group flex w-full items-center gap-3 px-4 py-2.5 text-left transition hover:bg-slate-50 dark:hover:bg-slate-700/50"
 									>
 										{#if item.type === 'diagram'}
-											<svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 flex-shrink-0 text-sky-500">
-												<path d="M4.75 3.5A1.25 1.25 0 0 1 6 2.25h8A1.25 1.25 0 0 1 15.25 3.5v13A1.25 1.25 0 0 1 14 17.75H6A1.25 1.25 0 0 1 4.75 16.5v-13Z" />
+											<svg
+												viewBox="0 0 20 20"
+												fill="currentColor"
+												class="h-4 w-4 flex-shrink-0 text-sky-500"
+											>
+												<path
+													d="M4.75 3.5A1.25 1.25 0 0 1 6 2.25h8A1.25 1.25 0 0 1 15.25 3.5v13A1.25 1.25 0 0 1 14 17.75H6A1.25 1.25 0 0 1 4.75 16.5v-13Z"
+												/>
 											</svg>
 										{:else}
-											<svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 flex-shrink-0 text-emerald-500">
-												<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd" />
+											<svg
+												viewBox="0 0 20 20"
+												fill="currentColor"
+												class="h-4 w-4 flex-shrink-0 text-emerald-500"
+											>
+												<path
+													fill-rule="evenodd"
+													d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
+													clip-rule="evenodd"
+												/>
 											</svg>
 										{/if}
 										<div class="min-w-0 flex-1">
@@ -137,7 +159,11 @@
 											title="Remove from favorites"
 										>
 											<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-												<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+												<path
+													fill-rule="evenodd"
+													d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+													clip-rule="evenodd"
+												/>
 											</svg>
 										</button>
 									</button>
@@ -150,4 +176,3 @@
 		{/if}
 	</div>
 {/if}
-</script>

@@ -38,32 +38,28 @@ const saveFavorites = (modelId: string, items: FavoriteItem[]) => {
 };
 
 // Derived store: favorites for current model
-export const favorites = derived(
-	[currentModelId, favoritesMap],
-	([$modelId, $map]) => {
-		if (!$modelId) return [];
-		if (!$map.has($modelId)) {
-			// Load from localStorage on first access
-			const loaded = loadFavorites($modelId);
-			if (loaded.length > 0) {
-				$map.set($modelId, loaded);
-			}
-			return loaded;
+export const favorites = derived([currentModelId, favoritesMap], ([$modelId, $map]) => {
+	if (!$modelId) return [];
+	if (!$map.has($modelId)) {
+		// Load from localStorage on first access
+		const loaded = loadFavorites($modelId);
+		if (loaded.length > 0) {
+			$map.set($modelId, loaded);
 		}
-		return $map.get($modelId) ?? [];
+		return loaded;
 	}
-);
+	return $map.get($modelId) ?? [];
+});
 
 // Check if an item is favorited
 export const isFavorite = (type: 'diagram' | 'info', id: string): boolean => {
-	const modelId = get(currentModelId);
 	const items = get(favorites);
 	return items.some((item) => item.type === type && item.id === id);
 };
 
 // Create a derived store to check if specific item is favorite (reactive)
 export const createIsFavoriteStore = (type: 'diagram' | 'info', id: string) => {
-	return derived(favorites, ($favorites) => 
+	return derived(favorites, ($favorites) =>
 		$favorites.some((item) => item.type === type && item.id === id)
 	);
 };
@@ -75,7 +71,7 @@ export const addFavorite = (type: 'diagram' | 'info', id: string, name: string) 
 
 	favoritesMap.update((map) => {
 		const current = map.get(modelId) ?? loadFavorites(modelId);
-		
+
 		// Don't add duplicates
 		if (current.some((item) => item.type === type && item.id === id)) {
 			return map;
@@ -114,7 +110,7 @@ export const toggleFavorite = (type: 'diagram' | 'info', id: string, name: strin
 // Initialize favorites for a model (call when model changes)
 export const initFavorites = (modelId: string) => {
 	currentModelId.set(modelId);
-	
+
 	// Ensure favorites are loaded
 	favoritesMap.update((map) => {
 		if (!map.has(modelId)) {
