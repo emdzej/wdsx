@@ -20,6 +20,7 @@
 	let searchResults = $state<TreeNodeType[]>([]);
 	let selectedResultIndex = $state(0);
 	let treeData = $state<ModelTree | null>(null);
+	let nodePathsMap = $state<Map<string, string>>(new Map());
 
 	// Resizable panel
 	let sidebarWidth = $state(320);
@@ -122,13 +123,19 @@
 	};
 
 	// Search functions
-	const flattenTree = (node: TreeNodeType, acc: TreeNodeType[] = []): TreeNodeType[] => {
+	const flattenTree = (
+		node: TreeNodeType,
+		acc: TreeNodeType[] = [],
+		pathNames: string[] = []
+	): TreeNodeType[] => {
+		const currentPath = [...pathNames, node.name];
 		if (node.type === 'leaf' && (node.diagram || node.info)) {
 			acc.push(node);
+			nodePathsMap.set(node.id, currentPath.join(' > '));
 		}
 		if (node.children) {
 			for (const child of node.children) {
-				flattenTree(child, acc);
+				flattenTree(child, acc, currentPath);
 			}
 		}
 		return acc;
@@ -331,6 +338,7 @@
 								<button
 									type="button"
 									onclick={() => navigateToNode(result)}
+									title={nodePathsMap.get(result.id) ?? result.name}
 									class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition {i ===
 									selectedResultIndex
 										? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300'
