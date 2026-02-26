@@ -1,12 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import {
-		collections,
-		deleteCollection,
-		removeFromCollection,
-		type Collection
-	} from '$lib/stores/collections';
+	import { collections, deleteCollection, removeFromCollection } from '$lib/stores/collections';
 	import { currentModelId } from '$lib/stores/favorites';
 	import { selectedItem } from '$lib/stores/search';
 
@@ -100,7 +95,10 @@
 			<div class="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
 				<h3 class="font-semibold text-slate-900 dark:text-white">Collections</h3>
 				<p class="text-xs text-slate-500 dark:text-slate-400">
-					{$collections.length} collection{$collections.length !== 1 ? 's' : ''}, {totalItems} item{totalItems !== 1 ? 's' : ''}
+					{$collections.length} collection{$collections.length !== 1 ? 's' : ''}, {totalItems} item{totalItems !==
+					1
+						? 's'
+						: ''}
 				</p>
 			</div>
 
@@ -114,7 +112,9 @@
 							stroke-width="1.5"
 							class="mx-auto mb-2 h-8 w-8 opacity-50"
 						>
-							<path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z" />
+							<path
+								d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"
+							/>
 						</svg>
 						<p>No collections yet</p>
 						<p class="mt-1 text-xs">Add items to collections from diagram or info pages</p>
@@ -123,7 +123,6 @@
 					{#each $collections as collection (collection.id)}
 						<div class="border-b border-slate-100 last:border-0 dark:border-slate-800">
 							<!-- Collection header -->
-							<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 							<div
 								role="button"
 								tabindex="0"
@@ -153,7 +152,9 @@
 										d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"
 									/>
 								</svg>
-								<span class="flex-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200">
+								<span
+									class="flex-1 truncate text-sm font-medium text-slate-700 dark:text-slate-200"
+								>
 									{collection.name}
 								</span>
 								<span class="text-xs text-slate-400">{collection.items.length}</span>
@@ -161,7 +162,9 @@
 									type="button"
 									class="ml-1 rounded p-1 text-slate-400 transition hover:bg-slate-200 hover:text-red-600 dark:hover:bg-slate-700 dark:hover:text-red-400"
 									onclick={(e) => handleDeleteCollection(e, collection.id)}
-									title={deleteConfirmId === collection.id ? 'Click again to confirm' : 'Delete collection'}
+									title={deleteConfirmId === collection.id
+										? 'Click again to confirm'
+										: 'Delete collection'}
 								>
 									{#if deleteConfirmId === collection.id}
 										<svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4 text-red-500">
@@ -170,9 +173,17 @@
 											/>
 										</svg>
 									{:else}
-										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+										<svg
+											viewBox="0 0 24 24"
+											fill="none"
+											stroke="currentColor"
+											stroke-width="2"
+											class="h-4 w-4"
+										>
 											<polyline points="3 6 5 6 21 6" />
-											<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+											<path
+												d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+											/>
 										</svg>
 									{/if}
 								</button>
@@ -225,10 +236,19 @@
 												<button
 													type="button"
 													class="flex-shrink-0 rounded p-1 text-slate-400 opacity-0 transition hover:bg-slate-200 hover:text-red-600 group-hover:opacity-100 dark:hover:bg-slate-600 dark:hover:text-red-400"
-													onclick={(e) => { e.stopPropagation(); handleRemoveItem(e, collection.id, item.type, item.id); }}
+													onclick={(e) => {
+														e.stopPropagation();
+														handleRemoveItem(e, collection.id, item.type, item.id);
+													}}
 													title="Remove from collection"
 												>
-													<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-3.5 w-3.5">
+													<svg
+														viewBox="0 0 24 24"
+														fill="none"
+														stroke="currentColor"
+														stroke-width="2"
+														class="h-3.5 w-3.5"
+													>
 														<line x1="18" y1="6" x2="6" y2="18" />
 														<line x1="6" y1="6" x2="18" y2="18" />
 													</svg>

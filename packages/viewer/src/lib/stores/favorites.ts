@@ -165,7 +165,10 @@ export const exportAllFavorites = (): FavoritesExport => {
 };
 
 // Import favorites (merge with existing)
-export const importFavorites = (data: FavoritesExport, mode: 'merge' | 'replace' = 'merge'): { imported: number; models: number } => {
+export const importFavorites = (
+	data: FavoritesExport,
+	mode: 'merge' | 'replace' = 'merge'
+): { imported: number; models: number } => {
 	if (!browser || !data.favorites) {
 		return { imported: 0, models: 0 };
 	}

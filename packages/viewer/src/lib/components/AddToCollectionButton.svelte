@@ -1,9 +1,5 @@
 <script lang="ts">
-	import {
-		collections,
-		createCollection,
-		addToCollection
-	} from '$lib/stores/collections';
+	import { collections, createCollection, addToCollection } from '$lib/stores/collections';
 
 	let {
 		type,
@@ -22,9 +18,9 @@
 
 	// Reactive - uses $collections store directly
 	const isInCollection = (collectionId: string) =>
-		$collections.find((c) => c.id === collectionId)?.items.some(
-			(item) => item.type === type && item.id === id
-		) ?? false;
+		$collections
+			.find((c) => c.id === collectionId)
+			?.items.some((item) => item.type === type && item.id === id) ?? false;
 
 	const handleClickOutside = (e: MouseEvent) => {
 		const target = e.target as HTMLElement;
@@ -126,7 +122,9 @@
 									fill="none"
 									stroke="currentColor"
 									stroke-width="2"
-									class="h-4 w-4 {alreadyIn ? 'text-slate-300 dark:text-slate-600' : 'text-indigo-500'}"
+									class="h-4 w-4 {alreadyIn
+										? 'text-slate-300 dark:text-slate-600'
+										: 'text-indigo-500'}"
 								>
 									<path
 										d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"
@@ -177,7 +175,13 @@
 								showNewInput = true;
 							}}
 						>
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								class="h-4 w-4"
+							>
 								<line x1="12" y1="5" x2="12" y2="19" />
 								<line x1="5" y1="12" x2="19" y2="12" />
 							</svg>

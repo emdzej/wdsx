@@ -199,7 +199,13 @@ export interface CollectionsExport {
 // Export all collections
 export const exportAllCollections = (): CollectionsExport => {
 	if (!browser) {
-		return { version: 1, exportedAt: new Date().toISOString(), app: 'wdsx', type: 'collections', collections: {} };
+		return {
+			version: 1,
+			exportedAt: new Date().toISOString(),
+			app: 'wdsx',
+			type: 'collections',
+			collections: {}
+		};
 	}
 
 	const allCollections: Record<string, Collection[]> = {};
