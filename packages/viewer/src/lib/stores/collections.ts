@@ -61,7 +61,11 @@ const generateId = () => Math.random().toString(36).slice(2, 10);
 // Create a new collection
 export const createCollection = (name: string): string => {
 	const modelId = get(currentModelId);
-	if (!modelId) return '';
+	console.log('createCollection called, modelId:', modelId, 'name:', name);
+	if (!modelId) {
+		console.log('createCollection: modelId is empty!');
+		return '';
+	}
 
 	const id = generateId();
 	const newCollection: Collection = {

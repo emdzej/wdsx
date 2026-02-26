@@ -46,9 +46,14 @@
 
 	const handleCreateAndAdd = () => {
 		const trimmed = newCollectionName.trim();
-		if (!trimmed) return;
+		console.log('handleCreateAndAdd called, name:', trimmed);
+		if (!trimmed) {
+			console.log('Name is empty, returning');
+			return;
+		}
 
 		const collectionId = createCollection(trimmed);
+		console.log('createCollection returned:', collectionId);
 		if (collectionId) {
 			addToCollection(collectionId, type, id, name);
 			message = `Created "${trimmed}" and added item`;
@@ -58,6 +63,8 @@
 				message = null;
 				isOpen = false;
 			}, 1500);
+		} else {
+			console.log('createCollection failed - check if currentModelId is set');
 		}
 	};
 
