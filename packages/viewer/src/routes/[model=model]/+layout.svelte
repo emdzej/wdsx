@@ -7,6 +7,7 @@
 	import TreeNode from '$lib/components/TreeNode.svelte';
 	import { treeSearchQuery, selectedItem } from '$lib/stores/search';
 	import { initFavorites } from '$lib/stores/favorites';
+	import { buildNameMaps } from '$lib/stores/tree';
 
 	let { children, data } = $props<{
 		children: () => unknown;
@@ -241,6 +242,7 @@
 		data.treePromise
 			.then((tree: ModelTree) => {
 				treeData = tree;
+				buildNameMaps(tree.tree);
 			})
 			.catch(() => {});
 	});

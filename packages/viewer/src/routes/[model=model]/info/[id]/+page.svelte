@@ -13,6 +13,7 @@
 	} from '@emdzej/wds-core';
 	import { loadDiagramsIndex } from '$lib/data/loaders';
 	import { favorites, toggleFavorite } from '$lib/stores/favorites';
+	import { infoNames } from '$lib/stores/tree';
 
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -42,8 +43,8 @@
 	);
 
 	const handleToggleFavorite = () => {
-		const name = infoMeta?.title ?? infoId;
-		toggleFavorite('info', infoId, name);
+		const treeName = $infoNames.get(infoId) ?? infoId;
+		toggleFavorite('info', infoId, treeName);
 	};
 
 	const slugify = (value: string): string => {

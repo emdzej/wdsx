@@ -147,11 +147,11 @@
 											</svg>
 										{/if}
 										<div class="min-w-0 flex-1">
-											<p class="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
+											<p class="text-sm font-medium text-slate-900 dark:text-slate-100">
 												{item.name}
-											</p>
-											<p class="truncate text-xs text-slate-500 dark:text-slate-400">
-												{item.id}
+												<span class="font-normal text-slate-500 dark:text-slate-400"
+													>({item.id})</span
+												>
 											</p>
 										</div>
 										<button

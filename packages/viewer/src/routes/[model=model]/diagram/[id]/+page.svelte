@@ -7,6 +7,7 @@
 	import { treeSearchQuery } from '$lib/stores/search';
 	import { favorites, toggleFavorite } from '$lib/stores/favorites';
 	import { labelScale } from '$lib/stores/settings';
+	import { diagramNames } from '$lib/stores/tree';
 
 	let svgMarkup = $state<string | null>(null);
 	let loading = $state(true);
@@ -31,8 +32,8 @@
 	);
 
 	const handleToggleFavorite = () => {
-		const name = diagramMeta?.title ?? diagramId;
-		toggleFavorite('diagram', diagramId, name);
+		const treeName = $diagramNames.get(diagramId) ?? diagramId;
+		toggleFavorite('diagram', diagramId, treeName);
 	};
 
 	const parseSearchLink = (href: string): string | null => {
