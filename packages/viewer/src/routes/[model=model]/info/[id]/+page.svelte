@@ -24,14 +24,6 @@
 	let markdownHost = $state<HTMLDivElement | null>(null);
 	let loadCounter = 0;
 
-	const relatedDiagrams = $derived.by(() =>
-		relatedDiagramIds.map((id) => ({
-			id,
-			meta: getDiagramMeta(id),
-			references: relatedDiagramRefs.get(id) ?? []
-		}))
-	);
-
 	let diagramsIndex = $state<DiagramsIndex | null>(null);
 	let relatedDiagramIds = $state<string[]>([]);
 	let relatedDiagramRefs = $state<Map<string, ModelReference[]>>(new Map());
@@ -39,6 +31,17 @@
 	const infoId = $derived($page.params.id ?? '');
 	const modelId = $derived($page.params.model ?? '');
 	const treeName = $derived($infoNames.get(infoId) ?? '');
+
+	const getDiagramMeta = (id: string): DiagramMeta | undefined =>
+		diagramsIndex?.diagrams.find((diagram) => diagram.id === id);
+
+	const relatedDiagrams = $derived.by(() =>
+		relatedDiagramIds.map((id) => ({
+			id,
+			meta: getDiagramMeta(id),
+			references: relatedDiagramRefs.get(id) ?? []
+		}))
+	);
 
 	const isFavorite = $derived(
 		$favorites.some((item) => item.type === 'info' && item.id === infoId)
@@ -91,9 +94,6 @@
 		}
 		return Array.from(ids);
 	};
-
-	const getDiagramMeta = (id: string): DiagramMeta | undefined =>
-		diagramsIndex?.diagrams.find((diagram) => diagram.id === id);
 
 	const normalizeImagePaths = (markdown: string): string => {
 		// Rewrite zi_images/ → /data/zi_images/
