@@ -217,9 +217,11 @@
 														<line x1="16" y1="17" x2="8" y2="17" />
 													</svg>
 												{/if}
-												<span class="min-w-0 flex-1 truncate text-slate-600 dark:text-slate-300">
-													{item.name}
-												</span>
+												<div class="min-w-0 flex-1">
+													<p class="text-sm text-slate-600 dark:text-slate-300">
+														{item.name}
+													</p>
+												</div>
 												<button
 													type="button"
 													class="flex-shrink-0 rounded p-1 text-slate-400 opacity-0 transition hover:bg-slate-200 hover:text-red-600 group-hover:opacity-100 dark:hover:bg-slate-600 dark:hover:text-red-400"
