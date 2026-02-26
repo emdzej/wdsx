@@ -507,6 +507,9 @@
 		/* Crisp SVG rendering at any zoom level */
 		shape-rendering: geometricPrecision;
 		text-rendering: geometricPrecision;
+		/* Prevent text selection during pan */
+		user-select: none;
+		-webkit-user-select: none;
 	}
 
 	:global(.wds-diagram-container) {
