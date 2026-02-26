@@ -179,7 +179,11 @@
 						<button
 							type="button"
 							class="mt-2 flex w-full items-center gap-2 rounded-md border border-dashed border-slate-300 px-3 py-2 text-left text-sm text-slate-500 transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-indigo-500 dark:hover:text-indigo-400"
-							onclick={() => (showNewInput = true)}
+							onclick={(e) => {
+								e.stopPropagation();
+								console.log('Create new collection clicked');
+								showNewInput = true;
+							}}
 						>
 							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
 								<line x1="12" y1="5" x2="12" y2="19" />
