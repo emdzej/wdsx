@@ -185,15 +185,13 @@
 										<p class="px-4 py-3 text-center text-xs text-slate-400">Empty collection</p>
 									{:else}
 										{#each collection.items as item (`${item.type}-${item.id}`)}
-											<div class="group flex w-full items-center gap-2 px-4 py-2 pl-10 text-left text-sm transition hover:bg-slate-100 dark:hover:bg-slate-700">
-												<!-- svelte-ignore a11y_no_static_element_interactions -->
-												<div
-													class="flex flex-1 items-center gap-2 cursor-pointer"
-													onclick={() => handleItemClick(item)}
-													onkeydown={(e) => e.key === 'Enter' && handleItemClick(item)}
-													role="button"
-													tabindex="0"
-												>
+											<div
+												role="button"
+												tabindex="0"
+												onclick={() => handleItemClick(item)}
+												onkeydown={(e) => e.key === 'Enter' && handleItemClick(item)}
+												class="group flex w-full cursor-pointer items-center gap-2 px-4 py-2 pl-10 text-left text-sm transition hover:bg-slate-100 dark:hover:bg-slate-700"
+											>
 												{#if item.type === 'diagram'}
 													<svg
 														viewBox="0 0 24 24"
@@ -219,15 +217,13 @@
 														<line x1="16" y1="17" x2="8" y2="17" />
 													</svg>
 												{/if}
-												<span class="flex-1 truncate text-slate-600 dark:text-slate-300">
+												<span class="min-w-0 flex-1 truncate text-slate-600 dark:text-slate-300">
 													{item.name}
 												</span>
-												<span class="text-xs text-slate-400">({item.id})</span>
-												</div>
 												<button
 													type="button"
-													class="rounded p-1 text-slate-400 opacity-0 transition hover:bg-slate-200 hover:text-red-600 group-hover:opacity-100 dark:hover:bg-slate-600 dark:hover:text-red-400"
-													onclick={(e) => handleRemoveItem(e, collection.id, item.type, item.id)}
+													class="flex-shrink-0 rounded p-1 text-slate-400 opacity-0 transition hover:bg-slate-200 hover:text-red-600 group-hover:opacity-100 dark:hover:bg-slate-600 dark:hover:text-red-400"
+													onclick={(e) => { e.stopPropagation(); handleRemoveItem(e, collection.id, item.type, item.id); }}
 													title="Remove from collection"
 												>
 													<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-3.5 w-3.5">
