@@ -144,22 +144,24 @@
 
 	const decorateLinks = (svg: SVGSVGElement) => {
 		const links = svg.querySelectorAll('a');
+		const LINK_COLOR = '#0ea5e9'; // sky-500
+
 		links.forEach((link) => {
 			link.classList.add('wds-diagram-link');
-			// Apply blue color to all elements inside the link (override inline styles)
-			const elements = link.querySelectorAll('*');
-			elements.forEach((el) => {
+
+			// Color all shape elements inside links
+			const shapes = link.querySelectorAll('path, line, rect, circle, ellipse, polyline, polygon');
+			shapes.forEach((el) => {
 				if (el instanceof SVGElement) {
-					// Store original colors for potential reset
-					const style = el.style;
-					if (style.stroke) {
-						el.dataset.originalStroke = style.stroke;
-						style.stroke = '#0ea5e9'; // sky-500
-					}
-					if (style.fill && el.tagName.toLowerCase() === 'text') {
-						el.dataset.originalFill = style.fill;
-						style.fill = '#0ea5e9';
-					}
+					el.style.stroke = LINK_COLOR;
+				}
+			});
+
+			// Color text elements
+			const texts = link.querySelectorAll('text, tspan');
+			texts.forEach((el) => {
+				if (el instanceof SVGElement) {
+					el.style.fill = LINK_COLOR;
 				}
 			});
 		});
