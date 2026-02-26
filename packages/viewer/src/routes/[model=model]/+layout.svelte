@@ -348,7 +348,7 @@
 											<path d="M10 2.25a7.75 7.75 0 1 0 0 15.5 7.75 7.75 0 0 0 0-15.5Z" />
 										</svg>
 									{/if}
-									<span class="truncate">{result.name}</span>
+									<span>{result.name}</span>
 								</button>
 							</li>
 						{/each}

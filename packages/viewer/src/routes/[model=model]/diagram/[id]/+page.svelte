@@ -144,7 +144,25 @@
 
 	const decorateLinks = (svg: SVGSVGElement) => {
 		const links = svg.querySelectorAll('a');
-		links.forEach((link) => link.classList.add('wds-diagram-link'));
+		links.forEach((link) => {
+			link.classList.add('wds-diagram-link');
+			// Apply blue color to all elements inside the link (override inline styles)
+			const elements = link.querySelectorAll('*');
+			elements.forEach((el) => {
+				if (el instanceof SVGElement) {
+					// Store original colors for potential reset
+					const style = el.style;
+					if (style.stroke) {
+						el.dataset.originalStroke = style.stroke;
+						style.stroke = '#0ea5e9'; // sky-500
+					}
+					if (style.fill && el.tagName.toLowerCase() === 'text') {
+						el.dataset.originalFill = style.fill;
+						style.fill = '#0ea5e9';
+					}
+				}
+			});
+		});
 	};
 
 	const applyLabelScale = (svg: SVGSVGElement, scale: number) => {
