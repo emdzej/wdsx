@@ -4,6 +4,7 @@
 	import { resolve } from '$app/paths';
 	import DarkModeToggle from './DarkModeToggle.svelte';
 	import FavoritesDropdown from './FavoritesDropdown.svelte';
+	import SettingsDropdown from './SettingsDropdown.svelte';
 
 	let {
 		models = [],
@@ -74,6 +75,7 @@
 				{/if}
 			</select>
 			<FavoritesDropdown />
+			<SettingsDropdown />
 			<DarkModeToggle />
 		</div>
 	</div>

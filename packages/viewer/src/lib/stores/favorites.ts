@@ -123,3 +123,95 @@ export const initFavorites = (modelId: string) => {
 		return map;
 	});
 };
+
+// Export format
+export interface FavoritesExport {
+	version: 1;
+	exportedAt: string;
+	app: 'wdsx';
+	favorites: Record<string, FavoriteItem[]>;
+}
+
+// Export all favorites from all models
+export const exportAllFavorites = (): FavoritesExport => {
+	if (!browser) {
+		return { version: 1, exportedAt: new Date().toISOString(), app: 'wdsx', favorites: {} };
+	}
+
+	const allFavorites: Record<string, FavoriteItem[]> = {};
+
+	// Scan localStorage for all favorites keys
+	for (let i = 0; i < localStorage.length; i++) {
+		const key = localStorage.key(i);
+		if (key?.startsWith(STORAGE_KEY_PREFIX)) {
+			const modelId = key.slice(STORAGE_KEY_PREFIX.length);
+			try {
+				const items = JSON.parse(localStorage.getItem(key) ?? '[]') as FavoriteItem[];
+				if (items.length > 0) {
+					allFavorites[modelId] = items;
+				}
+			} catch {
+				// Skip invalid entries
+			}
+		}
+	}
+
+	return {
+		version: 1,
+		exportedAt: new Date().toISOString(),
+		app: 'wdsx',
+		favorites: allFavorites
+	};
+};
+
+// Import favorites (merge with existing)
+export const importFavorites = (data: FavoritesExport, mode: 'merge' | 'replace' = 'merge'): { imported: number; models: number } => {
+	if (!browser || !data.favorites) {
+		return { imported: 0, models: 0 };
+	}
+
+	let totalImported = 0;
+	let modelsCount = 0;
+
+	for (const [modelId, items] of Object.entries(data.favorites)) {
+		if (!Array.isArray(items)) continue;
+
+		const validItems = items.filter(
+			(item) =>
+				item &&
+				typeof item.type === 'string' &&
+				typeof item.id === 'string' &&
+				typeof item.name === 'string'
+		);
+
+		if (validItems.length === 0) continue;
+
+		modelsCount++;
+
+		if (mode === 'replace') {
+			// Replace: overwrite existing
+			saveFavorites(modelId, validItems);
+			totalImported += validItems.length;
+		} else {
+			// Merge: add only new items
+			const existing = loadFavorites(modelId);
+			const existingKeys = new Set(existing.map((e) => `${e.type}:${e.id}`));
+			const newItems = validItems.filter((item) => !existingKeys.has(`${item.type}:${item.id}`));
+			if (newItems.length > 0) {
+				saveFavorites(modelId, [...existing, ...newItems]);
+				totalImported += newItems.length;
+			}
+		}
+	}
+
+	// Refresh current model's favorites in store
+	const modelId = get(currentModelId);
+	if (modelId) {
+		favoritesMap.update((map) => {
+			map.set(modelId, loadFavorites(modelId));
+			return new Map(map);
+		});
+	}
+
+	return { imported: totalImported, models: modelsCount };
+};
