@@ -320,7 +320,9 @@
 
 				<!-- Sidebar (sections + related diagrams) -->
 				{#if sections.length || relatedDiagrams.length}
-					<aside class="w-56 flex-shrink-0 space-y-4 print:hidden">
+					<aside
+						class="w-56 flex-shrink-0 space-y-4 print:hidden sticky top-0 self-start max-h-[calc(100vh-8rem)] overflow-y-auto"
+					>
 						{#if sections.length}
 							<div
 								class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900"
