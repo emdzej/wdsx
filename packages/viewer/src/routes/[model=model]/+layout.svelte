@@ -295,7 +295,7 @@
 >
 	<!-- Left panel: Search + Tree navigation -->
 	<aside
-		class="flex-shrink-0 overflow-hidden flex flex-col print:hidden"
+		class="relative z-10 flex-shrink-0 overflow-hidden flex flex-col print:hidden"
 		style="width: {sidebarWidth}px"
 	>
 		<div class="mb-3">
@@ -418,7 +418,7 @@
 	</div>
 
 	<!-- Right panel: Content viewer -->
-	<main class="flex-1 min-w-0 overflow-hidden pl-4">
+	<main class="relative z-30 flex-1 min-w-0 overflow-visible pl-4">
 		{@render children()}
 	</main>
 </div>
