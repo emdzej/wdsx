@@ -18,23 +18,56 @@
 
 @media print {
 	body {
-		background: white;
+		background: white !important;
+		overflow: visible !important;
 	}
 
-	.wds-no-print {
+	/* Hide everything except content */
+	nav,
+	header,
+	aside,
+	footer,
+	.print\\:hidden,
+	[class*='sidebar'],
+	button,
+	input,
+	select {
 		display: none !important;
 	}
 
-	.wds-diagram-container {
-		height: auto !important;
-		min-height: 0 !important;
-		border: none !important;
-		box-shadow: none !important;
-		background: transparent !important;
-	}
-
-	.wds-diagram-canvas svg {
+	/* Reset layout for printing */
+	main,
+	.wds-diagram-container,
+	.wds-info-container {
+		position: static !important;
 		width: 100% !important;
 		height: auto !important;
+		min-height: 0 !important;
+		max-height: none !important;
+		overflow: visible !important;
+		border: none !important;
+		border-radius: 0 !important;
+		box-shadow: none !important;
+		margin: 0 !important;
+		padding: 0 !important;
+		background: white !important;
+	}
+
+	/* SVG fits page */
+	.wds-diagram-container svg {
+		width: 100% !important;
+		height: auto !important;
+		max-width: 100% !important;
+		page-break-inside: avoid;
+	}
+
+	/* Info pages */
+	.wds-info-container {
+		padding: 1cm !important;
+	}
+
+	/* Ensure links print as text */
+	a {
+		text-decoration: none !important;
 	}
 }

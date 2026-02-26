@@ -417,6 +417,20 @@
 					<span class="w-8 text-right tabular-nums">{$labelScale}%</span>
 				</label>
 			</div>
+			<button
+				onclick={() => window.print()}
+				class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 print:hidden"
+				type="button"
+				title="Print diagram"
+			>
+				<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+					<path
+						fill-rule="evenodd"
+						d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z"
+						clip-rule="evenodd"
+					/>
+				</svg>
+			</button>
 		</div>
 	</div>
 
@@ -502,5 +516,29 @@
 		image-rendering: -webkit-optimize-contrast;
 		image-rendering: crisp-edges;
 		-webkit-font-smoothing: none;
+	}
+
+	/* Print styles */
+	@media print {
+		:global(body) {
+			background: white !important;
+		}
+
+		:global(.wds-diagram-container) {
+			position: fixed !important;
+			inset: 0 !important;
+			border: none !important;
+			border-radius: 0 !important;
+			box-shadow: none !important;
+			margin: 0 !important;
+			padding: 0 !important;
+		}
+
+		:global(.wds-diagram-container svg) {
+			width: 100vw !important;
+			height: 100vh !important;
+			max-width: 100vw !important;
+			max-height: 100vh !important;
+		}
 	}
 </style>

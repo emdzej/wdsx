@@ -258,6 +258,20 @@
 				/>
 			</svg>
 		</button>
+		<button
+			onclick={() => window.print()}
+			class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 print:hidden"
+			type="button"
+			title="Print document"
+		>
+			<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+				<path
+					fill-rule="evenodd"
+					d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z"
+					clip-rule="evenodd"
+				/>
+			</svg>
+		</button>
 	</div>
 
 	<!-- Content -->
@@ -287,7 +301,7 @@
 				<!-- Main content -->
 				<div
 					bind:this={markdownHost}
-					class="info-markdown prose max-w-none flex-1 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:prose-invert prose-slate"
+					class="info-markdown wds-info-container prose max-w-none flex-1 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:prose-invert prose-slate"
 				>
 					<!-- eslint-disable-next-line svelte/no-at-html-tags -- safe: rendered markdown from local files -->
 					{@html htmlContent}
