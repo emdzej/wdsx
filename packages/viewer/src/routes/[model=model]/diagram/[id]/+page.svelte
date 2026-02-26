@@ -148,22 +148,6 @@
 
 		links.forEach((link) => {
 			link.classList.add('wds-diagram-link');
-
-			// Color all shape elements inside links
-			const shapes = link.querySelectorAll('path, line, rect, circle, ellipse, polyline, polygon');
-			shapes.forEach((el) => {
-				if (el instanceof SVGElement) {
-					el.style.stroke = LINK_COLOR;
-				}
-			});
-
-			// Color text elements
-			const texts = link.querySelectorAll('text, tspan');
-			texts.forEach((el) => {
-				if (el instanceof SVGElement) {
-					el.style.fill = LINK_COLOR;
-				}
-			});
 		});
 	};
 
@@ -478,6 +462,7 @@
 <style>
 	:global(.wds-diagram-link) {
 		cursor: pointer;
+		fill: #0d77a8 !important; /* sky-500 */
 	}
 
 	/* Make links visually distinct with blue color */
