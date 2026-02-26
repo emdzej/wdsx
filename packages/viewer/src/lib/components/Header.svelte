@@ -2,6 +2,7 @@
 	import type { ModelMeta } from '@emdzej/wds-core';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import HistoryDropdown from './HistoryDropdown.svelte';
 	import FavoritesDropdown from './FavoritesDropdown.svelte';
 	import CollectionsDropdown from './CollectionsDropdown.svelte';
 	import SettingsDropdown from './SettingsDropdown.svelte';
@@ -74,6 +75,7 @@
 					{/each}
 				{/if}
 			</select>
+			<HistoryDropdown />
 			<FavoritesDropdown />
 			<CollectionsDropdown />
 			<SettingsDropdown />

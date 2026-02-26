@@ -5,7 +5,6 @@
 	import { loadModelsIndex } from '$lib/data/loaders';
 	import type { ModelMeta } from '@emdzej/wds-core';
 	import Header from '$lib/components/Header.svelte';
-	import HistoryDropdown from '$lib/components/HistoryDropdown.svelte';
 	import { initTheme } from '$lib/stores/theme';
 
 	let { children } = $props<{ children: () => unknown }>();
@@ -48,9 +47,6 @@
 				/>
 			</div>
 			<main class="flex-1 px-4 py-6 md:px-8 print:p-0">
-				<div class="print:hidden mb-4">
-					<HistoryDropdown />
-				</div>
 				<div class="print:mt-0">
 					{@render children()}
 				</div>

@@ -46,14 +46,9 @@
 
 	const handleCreateAndAdd = () => {
 		const trimmed = newCollectionName.trim();
-		console.log('handleCreateAndAdd called, name:', trimmed);
-		if (!trimmed) {
-			console.log('Name is empty, returning');
-			return;
-		}
+		if (!trimmed) return;
 
 		const collectionId = createCollection(trimmed);
-		console.log('createCollection returned:', collectionId);
 		if (collectionId) {
 			addToCollection(collectionId, type, id, name);
 			message = `Created "${trimmed}" and added item`;
@@ -63,8 +58,6 @@
 				message = null;
 				isOpen = false;
 			}, 1500);
-		} else {
-			console.log('createCollection failed - check if currentModelId is set');
 		}
 	};
 
@@ -181,7 +174,6 @@
 							class="mt-2 flex w-full items-center gap-2 rounded-md border border-dashed border-slate-300 px-3 py-2 text-left text-sm text-slate-500 transition hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-indigo-500 dark:hover:text-indigo-400"
 							onclick={(e) => {
 								e.stopPropagation();
-								console.log('Create new collection clicked');
 								showNewInput = true;
 							}}
 						>
