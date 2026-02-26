@@ -14,6 +14,7 @@
 	import { loadDiagramsIndex } from '$lib/data/loaders';
 	import { favorites, toggleFavorite } from '$lib/stores/favorites';
 	import { infoNames } from '$lib/stores/tree';
+	import { addToHistory } from '$lib/stores/history';
 
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -37,14 +38,21 @@
 
 	const infoId = $derived($page.params.id ?? '');
 	const modelId = $derived($page.params.model ?? '');
+	const treeName = $derived($infoNames.get(infoId) ?? '');
 
 	const isFavorite = $derived(
 		$favorites.some((item) => item.type === 'info' && item.id === infoId)
 	);
 
+	// Add to history when tree name is available
+	$effect(() => {
+		if (infoId && treeName) {
+			addToHistory('info', infoId, treeName);
+		}
+	});
+
 	const handleToggleFavorite = () => {
-		const treeName = $infoNames.get(infoId) ?? infoId;
-		toggleFavorite('info', infoId, treeName);
+		toggleFavorite('info', infoId, treeName || infoId);
 	};
 
 	const slugify = (value: string): string => {
@@ -240,9 +248,10 @@
 			<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
 				Info
 			</p>
-			<h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100 truncate">
-				{infoMeta?.title ?? infoId}
+			<h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+				{treeName || infoMeta?.title || infoId}
 			</h1>
+			<p class="text-xs text-slate-500 dark:text-slate-400 font-mono">{infoId}</p>
 		</div>
 		<button
 			onclick={handleToggleFavorite}

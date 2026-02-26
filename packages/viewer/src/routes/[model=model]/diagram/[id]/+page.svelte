@@ -8,6 +8,7 @@
 	import { favorites, toggleFavorite } from '$lib/stores/favorites';
 	import { labelScale } from '$lib/stores/settings';
 	import { diagramNames } from '$lib/stores/tree';
+	import { addToHistory } from '$lib/stores/history';
 
 	let svgMarkup = $state<string | null>(null);
 	let loading = $state(true);
@@ -26,14 +27,21 @@
 
 	const diagramId = $derived($page.params.id ?? '');
 	const modelId = $derived($page.params.model ?? '');
+	const treeName = $derived($diagramNames.get(diagramId) ?? '');
 
 	const isFavorite = $derived(
 		$favorites.some((item) => item.type === 'diagram' && item.id === diagramId)
 	);
 
+	// Add to history when tree name is available
+	$effect(() => {
+		if (diagramId && treeName) {
+			addToHistory('diagram', diagramId, treeName);
+		}
+	});
+
 	const handleToggleFavorite = () => {
-		const treeName = $diagramNames.get(diagramId) ?? diagramId;
-		toggleFavorite('diagram', diagramId, treeName);
+		toggleFavorite('diagram', diagramId, treeName || diagramId);
 	};
 
 	const parseSearchLink = (href: string): string | null => {
@@ -341,12 +349,10 @@
 			<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
 				Diagram
 			</p>
-			<h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100 truncate">
-				{diagramId}
+			<h1 class="text-xl font-semibold text-slate-900 dark:text-slate-100">
+				{treeName || diagramMeta?.title || diagramId}
 			</h1>
-			{#if diagramMeta?.title}
-				<p class="text-sm text-slate-600 dark:text-slate-300 truncate">{diagramMeta.title}</p>
-			{/if}
+			<p class="text-xs text-slate-500 dark:text-slate-400 font-mono">{diagramId}</p>
 		</div>
 		<div class="flex items-center gap-2">
 			<button
