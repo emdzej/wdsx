@@ -144,7 +144,7 @@
 
 	const decorateLinks = (svg: SVGSVGElement) => {
 		const links = svg.querySelectorAll('a');
-		const LINK_COLOR = '#0ea5e9'; // sky-500
+		// const LINK_COLOR = '#0ea5e9'; // sky-500
 
 		links.forEach((link) => {
 			link.classList.add('wds-diagram-link');
