@@ -460,10 +460,24 @@
 		cursor: pointer;
 	}
 
+	/* Make links visually distinct with blue color */
+	:global(.wds-diagram-link *) {
+		stroke: #0ea5e9 !important; /* sky-500 */
+	}
+
+	:global(.wds-diagram-link text) {
+		fill: #0ea5e9 !important; /* sky-500 */
+	}
+
 	:global(.wds-diagram-link.wds-link-hover *),
 	:global(.wds-diagram-link:hover *) {
-		stroke: #38bdf8 !important;
+		stroke: #38bdf8 !important; /* sky-400 - lighter on hover */
 		stroke-width: 2;
+	}
+
+	:global(.wds-diagram-link.wds-link-hover text),
+	:global(.wds-diagram-link:hover text) {
+		fill: #38bdf8 !important;
 	}
 
 	:global(.wds-diagram-container svg) {
