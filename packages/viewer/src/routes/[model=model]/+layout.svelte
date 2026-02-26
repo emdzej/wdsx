@@ -26,6 +26,19 @@
 	let containerRef: HTMLDivElement | null = null;
 
 	const modelId = $derived($page.params.model ?? '');
+
+	// Extract selected diagram/info ID from current route
+	const selectedDiagramId = $derived.by(() => {
+		const path = $page.url.pathname;
+		const match = path.match(/\/diagram\/([^/]+)$/);
+		return match?.[1] ?? null;
+	});
+	const selectedInfoId = $derived.by(() => {
+		const path = $page.url.pathname;
+		const match = path.match(/\/info\/([^/]+)$/);
+		return match?.[1] ?? null;
+	});
+
 	const getStorageKey = (id: string) => `wds-viewer-tree:${id}`;
 	const SIDEBAR_WIDTH_KEY = 'wds-viewer-sidebar-width';
 
@@ -359,6 +372,8 @@
 						{modelId}
 						expandedIds={expandedSet}
 						onToggle={toggleNode}
+						{selectedDiagramId}
+						{selectedInfoId}
 					/>
 				</ul>
 			{:catch error}

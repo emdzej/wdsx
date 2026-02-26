@@ -7,6 +7,8 @@
 	export let expandedIds: Set<string>;
 	export let onToggle: (id: string) => void;
 	export let depth = 0;
+	export let selectedDiagramId: string | null = null;
+	export let selectedInfoId: string | null = null;
 
 	const isFolder = (node: TreeNodeType) => node.type === 'folder';
 	const hasChildren = (node: TreeNodeType) => (node.children?.length ?? 0) > 0;
@@ -17,6 +19,8 @@
 	$: hasDiagram = Boolean(node.diagram);
 	$: hasInfo = Boolean(node.info);
 	$: hasLink = hasDiagram || hasInfo;
+	$: isSelected =
+		(hasDiagram && node.diagram === selectedDiagramId) || (hasInfo && node.info === selectedInfoId);
 </script>
 
 <li class="select-none">
@@ -56,7 +60,15 @@
 		{#if expanded && hasChildren(node)}
 			<ul class="mt-1 space-y-1">
 				{#each node.children ?? [] as child (child.id)}
-					<svelte:self node={child} {modelId} {expandedIds} {onToggle} depth={depth + 1} />
+					<svelte:self
+						node={child}
+						{modelId}
+						{expandedIds}
+						{onToggle}
+						{selectedDiagramId}
+						{selectedInfoId}
+						depth={depth + 1}
+					/>
 				{/each}
 			</ul>
 		{/if}
@@ -64,7 +76,9 @@
 		{#if hasDiagram}
 			<a
 				href={resolve(`/${modelId}/diagram/${node.diagram}`)}
-				class="flex w-full items-start gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-900"
+				class="flex w-full items-start gap-2 rounded-lg px-3 py-2 text-sm transition {isSelected
+					? 'bg-sky-100 text-sky-700 dark:bg-sky-900/50 dark:text-sky-300'
+					: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-900'}"
 				style={`padding-left: ${indent}`}
 			>
 				<span class="flex h-5 w-5 flex-shrink-0 items-center justify-center" aria-hidden="true">
@@ -79,7 +93,9 @@
 		{:else}
 			<a
 				href={resolve(`/${modelId}/info/${node.info}`)}
-				class="flex w-full items-start gap-2 rounded-lg px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-900"
+				class="flex w-full items-start gap-2 rounded-lg px-3 py-2 text-sm transition {isSelected
+					? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
+					: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-900'}"
 				style={`padding-left: ${indent}`}
 			>
 				<span class="flex h-5 w-5 flex-shrink-0 items-center justify-center" aria-hidden="true">
