@@ -279,9 +279,16 @@
 	});
 </script>
 
-<div bind:this={containerRef} class="flex h-[calc(100vh-10rem)]" class:select-none={isResizing}>
+<div
+	bind:this={containerRef}
+	class="flex h-[calc(100vh-10rem)] print:block print:h-auto"
+	class:select-none={isResizing}
+>
 	<!-- Left panel: Search + Tree navigation -->
-	<aside class="flex-shrink-0 overflow-hidden flex flex-col" style="width: {sidebarWidth}px">
+	<aside
+		class="flex-shrink-0 overflow-hidden flex flex-col print:hidden"
+		style="width: {sidebarWidth}px"
+	>
 		<div class="mb-3">
 			<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
 				{modelId}
@@ -389,7 +396,7 @@
 	<!-- Resize handle -->
 	<!-- svelte-ignore a11y_no_noninteractive_element_interactions a11y_no_noninteractive_tabindex -->
 	<div
-		class="w-2 flex-shrink-0 cursor-col-resize group flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+		class="w-2 flex-shrink-0 cursor-col-resize group flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors print:hidden"
 		onmousedown={startResize}
 		role="separator"
 		aria-orientation="vertical"

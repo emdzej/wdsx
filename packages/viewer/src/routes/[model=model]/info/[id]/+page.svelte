@@ -233,9 +233,9 @@
 	});
 </script>
 
-<div class="flex h-full flex-col overflow-hidden">
+<div class="flex h-full flex-col overflow-hidden print:block print:h-auto print:overflow-visible">
 	<!-- Header -->
-	<div class="pb-3 flex-shrink-0 flex items-start justify-between gap-3">
+	<div class="pb-3 flex-shrink-0 flex items-start justify-between gap-3 print:hidden">
 		<div class="min-w-0">
 			<p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
 				Info
@@ -275,7 +275,7 @@
 	</div>
 
 	<!-- Content -->
-	<div class="flex-1 min-h-0 overflow-y-auto">
+	<div class="flex-1 min-h-0 overflow-y-auto print:overflow-visible print:min-h-0">
 		{#if loading}
 			<div
 				class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
@@ -309,7 +309,7 @@
 
 				<!-- Sidebar (sections + related diagrams) -->
 				{#if sections.length || relatedDiagrams.length}
-					<aside class="w-56 flex-shrink-0 space-y-4">
+					<aside class="w-56 flex-shrink-0 space-y-4 print:hidden">
 						{#if sections.length}
 							<div
 								class="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm dark:border-slate-800 dark:bg-slate-900"
