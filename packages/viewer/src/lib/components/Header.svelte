@@ -2,8 +2,8 @@
 	import type { ModelMeta } from '@emdzej/wds-core';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import DarkModeToggle from './DarkModeToggle.svelte';
 	import FavoritesDropdown from './FavoritesDropdown.svelte';
+	import CollectionsDropdown from './CollectionsDropdown.svelte';
 	import SettingsDropdown from './SettingsDropdown.svelte';
 
 	let {
@@ -75,8 +75,8 @@
 				{/if}
 			</select>
 			<FavoritesDropdown />
+			<CollectionsDropdown />
 			<SettingsDropdown />
-			<DarkModeToggle />
 		</div>
 	</div>
 </header>

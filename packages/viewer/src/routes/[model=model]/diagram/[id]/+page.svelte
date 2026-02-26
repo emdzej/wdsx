@@ -9,6 +9,7 @@
 	import { labelScale } from '$lib/stores/settings';
 	import { diagramNames } from '$lib/stores/tree';
 	import { addToHistory } from '$lib/stores/history';
+	import AddToCollectionButton from '$lib/components/AddToCollectionButton.svelte';
 
 	let svgMarkup = $state<string | null>(null);
 	let loading = $state(true);
@@ -369,6 +370,7 @@
 					/>
 				</svg>
 			</button>
+			<AddToCollectionButton type="diagram" id={diagramId} name={treeName || diagramMeta?.title || diagramId} />
 			<button
 				onclick={zoomOut}
 				class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700"

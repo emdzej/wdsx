@@ -6,6 +6,7 @@
 	import type { ModelMeta } from '@emdzej/wds-core';
 	import Header from '$lib/components/Header.svelte';
 	import HistoryDropdown from '$lib/components/HistoryDropdown.svelte';
+	import { initTheme } from '$lib/stores/theme';
 
 	let { children } = $props<{ children: () => unknown }>();
 
@@ -20,6 +21,7 @@
 	});
 
 	onMount(async () => {
+		initTheme();
 		try {
 			const modelsIndex = await loadModelsIndex(fetch);
 			models = modelsIndex.models;

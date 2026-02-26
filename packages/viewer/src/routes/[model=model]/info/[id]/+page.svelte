@@ -15,6 +15,7 @@
 	import { favorites, toggleFavorite } from '$lib/stores/favorites';
 	import { infoNames } from '$lib/stores/tree';
 	import { addToHistory } from '$lib/stores/history';
+	import AddToCollectionButton from '$lib/components/AddToCollectionButton.svelte';
 
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -268,6 +269,7 @@
 					/>
 				</svg>
 			</button>
+			<AddToCollectionButton type="info" id={infoId} name={treeName || infoMeta?.title || infoId} />
 			<button
 				onclick={() => window.print()}
 				class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 print:hidden"

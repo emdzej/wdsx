@@ -7,6 +7,7 @@
 	import TreeNode from '$lib/components/TreeNode.svelte';
 	import { treeSearchQuery, selectedItem } from '$lib/stores/search';
 	import { initFavorites } from '$lib/stores/favorites';
+	import { initCollections } from '$lib/stores/collections';
 	import { buildNameMaps } from '$lib/stores/tree';
 
 	let { children, data } = $props<{
@@ -81,6 +82,7 @@
 			loadedModelId = modelId;
 			expandedIds = loadExpandedIds(modelId);
 			initFavorites(modelId);
+			initCollections(modelId);
 		}
 	});
 
