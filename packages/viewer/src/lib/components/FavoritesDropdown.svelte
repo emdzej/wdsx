@@ -82,7 +82,7 @@
 
 		{#if isOpen}
 			<div
-				class="absolute right-0 z-30 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-800"
+				class="absolute right-0 z-50 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-800"
 			>
 				<div class="border-b border-slate-200 p-3 dark:border-slate-700">
 					<input

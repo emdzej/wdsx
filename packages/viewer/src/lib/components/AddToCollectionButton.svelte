@@ -105,7 +105,7 @@
 
 	{#if isOpen}
 		<div
-			class="absolute right-0 top-full z-[100] mt-2 w-64 rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
+			class="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
 		>
 			<div class="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
 				<h3 class="text-sm font-semibold text-slate-900 dark:text-white">Add to Collection</h3>

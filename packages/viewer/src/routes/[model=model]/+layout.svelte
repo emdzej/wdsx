@@ -418,7 +418,7 @@
 	</div>
 
 	<!-- Right panel: Content viewer -->
-	<main class="relative z-30 flex-1 min-w-0 overflow-visible pl-4">
+	<main class="relative z-20 flex-1 min-w-0 overflow-visible pl-4">
 		{@render children()}
 	</main>
 </div>

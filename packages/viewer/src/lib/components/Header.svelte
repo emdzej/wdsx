@@ -27,7 +27,7 @@
 </script>
 
 <header
-	class="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90"
+	class="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur dark:border-slate-800 dark:bg-slate-950/90"
 >
 	<div class="flex items-center justify-between gap-4 px-4 py-3 md:px-6">
 		<div class="flex items-center gap-3">
