@@ -85,6 +85,18 @@
 		links.forEach((link) => link.classList.add('wds-diagram-link'));
 	};
 
+	const applyLabelScale = (svg: SVGSVGElement, scale: number) => {
+		const scaleFactor = scale / 100;
+		// Original font sizes from SVG style
+		const sizes: Record<string, number> = { t1: 31, t2: 42, t3: 12 };
+		for (const [cls, baseSize] of Object.entries(sizes)) {
+			const elements = svg.querySelectorAll(`text.${cls}`);
+			elements.forEach((el) => {
+				(el as SVGTextElement).style.fontSize = `${baseSize * scaleFactor}`;
+			});
+		}
+	};
+
 	const handleSvgClick = (event: MouseEvent) => {
 		const target = event.target as HTMLElement | null;
 		const link = target?.closest('a');
@@ -173,6 +185,7 @@
 				detachSvgInteractions();
 				svgElement = svg;
 				decorateLinks(svg);
+				applyLabelScale(svg, $labelScale);
 				attachSvgInteractions(svg);
 				setupPanzoom(svg);
 			});
@@ -220,6 +233,13 @@
 	$effect(() => {
 		if (!diagramId) return;
 		void loadDiagram(diagramId);
+	});
+
+	// React to label scale changes
+	$effect(() => {
+		const scale = $labelScale;
+		if (!svgElement) return;
+		applyLabelScale(svgElement, scale);
 	});
 
 	onMount(() => {
@@ -323,7 +343,6 @@
 	<div
 		bind:this={svgHost}
 		class="relative flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 wds-diagram-container"
-		style="--label-scale: {$labelScale / 100}"
 	>
 		{#if loading}
 			<div class="flex h-full flex-col items-center justify-center gap-4 px-6">
@@ -371,28 +390,10 @@
 		text-rendering: geometricPrecision;
 	}
 
-	:global(.wds-diagram-container svg *) {
-		/* Prevent stroke scaling on zoom */
-		vector-effect: non-scaling-stroke;
-	}
-
 	:global(.wds-diagram-container) {
 		/* Force crisp rendering for transformed content */
 		image-rendering: -webkit-optimize-contrast;
 		image-rendering: crisp-edges;
 		-webkit-font-smoothing: none;
-	}
-
-	/* Scalable text labels - wire labels, component names, etc. */
-	:global(.wds-diagram-container svg text.t1) {
-		font-size: calc(31 * var(--label-scale, 1)) !important;
-	}
-
-	:global(.wds-diagram-container svg text.t2) {
-		font-size: calc(42 * var(--label-scale, 1)) !important;
-	}
-
-	:global(.wds-diagram-container svg text.t3) {
-		font-size: calc(12 * var(--label-scale, 1)) !important;
 	}
 </style>
