@@ -26,6 +26,9 @@
 	let isPanning = $state(false);
 	let panStart = { x: 0, y: 0, viewX: 0, viewY: 0 };
 
+	// Touch gesture state
+	let lastTouchDistance = 0;
+
 	const diagramId = $derived($page.params.id ?? '');
 	const modelId = $derived($page.params.model ?? '');
 	const treeName = $derived($diagramNames.get(diagramId) ?? '');
@@ -149,6 +152,82 @@
 	const handlePointerUp = (event: PointerEvent) => {
 		isPanning = false;
 		svgHost?.releasePointerCapture(event.pointerId);
+	};
+
+	// Touch gesture handlers for pinch-to-zoom
+	const getTouchDistance = (touches: TouchList): number => {
+		if (touches.length < 2) return 0;
+		const dx = touches[1].clientX - touches[0].clientX;
+		const dy = touches[1].clientY - touches[0].clientY;
+		return Math.sqrt(dx * dx + dy * dy);
+	};
+
+	const getTouchCenter = (
+		touches: TouchList
+	): { x: number; y: number; relX: number; relY: number } => {
+		if (!svgHost) return { x: 0, y: 0, relX: 0.5, relY: 0.5 };
+		const rect = svgHost.getBoundingClientRect();
+		if (touches.length === 1) {
+			const x = touches[0].clientX;
+			const y = touches[0].clientY;
+			return {
+				x,
+				y,
+				relX: (x - rect.left) / rect.width,
+				relY: (y - rect.top) / rect.height
+			};
+		}
+		const x = (touches[0].clientX + touches[1].clientX) / 2;
+		const y = (touches[0].clientY + touches[1].clientY) / 2;
+		return {
+			x,
+			y,
+			relX: (x - rect.left) / rect.width,
+			relY: (y - rect.top) / rect.height
+		};
+	};
+
+	const handleTouchStart = (event: TouchEvent) => {
+		if (event.touches.length === 2) {
+			event.preventDefault();
+			lastTouchDistance = getTouchDistance(event.touches);
+		}
+	};
+
+	const handleTouchMove = (event: TouchEvent) => {
+		if (!svgElement || !svgHost) return;
+
+		if (event.touches.length === 2) {
+			event.preventDefault();
+
+			// Pinch zoom
+			const newDistance = getTouchDistance(event.touches);
+			const center = getTouchCenter(event.touches);
+
+			if (lastTouchDistance > 0) {
+				const scale = lastTouchDistance / newDistance;
+				const newWidth = viewBox.width * scale;
+				const newHeight = viewBox.height * scale;
+
+				// Limit zoom (min 10%, max 1000% of original)
+				if (newWidth >= originalViewBox.width * 0.1 && newWidth <= originalViewBox.width * 10) {
+					// Zoom toward pinch center
+					viewBox.x += (viewBox.width - newWidth) * center.relX;
+					viewBox.y += (viewBox.height - newHeight) * center.relY;
+					viewBox.width = newWidth;
+					viewBox.height = newHeight;
+					applyViewBox(svgElement);
+				}
+			}
+
+			lastTouchDistance = newDistance;
+		}
+	};
+
+	const handleTouchEnd = (event: TouchEvent) => {
+		if (event.touches.length < 2) {
+			lastTouchDistance = 0;
+		}
 	};
 
 	const decorateLinks = (svg: SVGSVGElement) => {
@@ -458,6 +537,9 @@
 		onpointermove={handlePointerMove}
 		onpointerup={handlePointerUp}
 		onpointerleave={handlePointerUp}
+		ontouchstart={handleTouchStart}
+		ontouchmove={handleTouchMove}
+		ontouchend={handleTouchEnd}
 	>
 		{#if loading}
 			<div class="flex h-full flex-col items-center justify-center gap-4 px-6">
@@ -528,6 +610,8 @@
 		image-rendering: -webkit-optimize-contrast;
 		image-rendering: crisp-edges;
 		-webkit-font-smoothing: none;
+		/* Prevent browser from handling touch gestures */
+		touch-action: none;
 	}
 
 	/* Print styles */
