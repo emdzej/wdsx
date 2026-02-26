@@ -3,7 +3,6 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/stores';
 	import { onDestroy, onMount, tick } from 'svelte';
-	import panzoom from 'panzoom';
 	import type { DiagramMeta, DiagramsIndex } from '@emdzej/wds-core';
 	import { treeSearchQuery } from '$lib/stores/search';
 	import { favorites, toggleFavorite } from '$lib/stores/favorites';
@@ -16,8 +15,13 @@
 	let isFullscreen = $state(false);
 	let svgHost: HTMLDivElement | null = null;
 	let svgElement: SVGSVGElement | null = null;
-	let panzoomInstance: ReturnType<typeof panzoom> | null = null;
 	let loadCounter = 0;
+
+	// ViewBox-based pan/zoom state
+	let viewBox = $state({ x: 0, y: 0, width: 0, height: 0 });
+	let originalViewBox = { x: 0, y: 0, width: 0, height: 0 };
+	let isPanning = $state(false);
+	let panStart = { x: 0, y: 0, viewX: 0, viewY: 0 };
 
 	const diagramId = $derived($page.params.id ?? '');
 	const modelId = $derived($page.params.model ?? '');
@@ -60,24 +64,81 @@
 		return await response.text();
 	};
 
-	const setupPanzoom = (svg: SVGSVGElement) => {
-		panzoomInstance?.dispose();
+	const initViewBox = (svg: SVGSVGElement) => {
+		// Get original viewBox or calculate from SVG dimensions
+		const vb = svg.viewBox.baseVal;
+		if (vb.width > 0 && vb.height > 0) {
+			originalViewBox = { x: vb.x, y: vb.y, width: vb.width, height: vb.height };
+		} else {
+			// Fallback to SVG dimensions
+			const bbox = svg.getBBox();
+			originalViewBox = { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height };
+		}
+		viewBox = { ...originalViewBox };
+		applyViewBox(svg);
+	};
 
-		svg.style.width = '100%';
-		svg.style.height = '100%';
-		svg.style.maxWidth = 'none';
-		svg.style.maxHeight = 'none';
+	const applyViewBox = (svg: SVGSVGElement) => {
+		svg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
+	};
 
-		panzoomInstance = panzoom(svg, {
-			maxZoom: 10,
-			minZoom: 0.1,
-			zoomSpeed: 0.065,
-			bounds: false,
-			boundsPadding: 0.1,
-			smoothScroll: false,
-			beforeWheel: () => false,
-			filterKey: () => true
-		});
+	const handleWheel = (event: WheelEvent) => {
+		if (!svgElement || !svgHost) return;
+		event.preventDefault();
+
+		const rect = svgHost.getBoundingClientRect();
+		// Mouse position relative to container (0-1)
+		const mx = (event.clientX - rect.left) / rect.width;
+		const my = (event.clientY - rect.top) / rect.height;
+
+		// Zoom factor
+		const delta = event.deltaY > 0 ? 1.1 : 0.9;
+		const newWidth = viewBox.width * delta;
+		const newHeight = viewBox.height * delta;
+
+		// Limit zoom (min 10%, max 1000% of original)
+		if (newWidth < originalViewBox.width * 0.1 || newWidth > originalViewBox.width * 10) return;
+
+		// Adjust position to zoom toward mouse
+		viewBox.x += (viewBox.width - newWidth) * mx;
+		viewBox.y += (viewBox.height - newHeight) * my;
+		viewBox.width = newWidth;
+		viewBox.height = newHeight;
+
+		applyViewBox(svgElement);
+	};
+
+	const handlePointerDown = (event: PointerEvent) => {
+		if (event.button !== 0) return; // Only left click
+		if ((event.target as HTMLElement)?.closest('a')) return; // Don't pan on links
+
+		isPanning = true;
+		panStart = {
+			x: event.clientX,
+			y: event.clientY,
+			viewX: viewBox.x,
+			viewY: viewBox.y
+		};
+		svgHost?.setPointerCapture(event.pointerId);
+	};
+
+	const handlePointerMove = (event: PointerEvent) => {
+		if (!isPanning || !svgElement || !svgHost) return;
+
+		const rect = svgHost.getBoundingClientRect();
+		// Convert pixel movement to viewBox units
+		const scaleX = viewBox.width / rect.width;
+		const scaleY = viewBox.height / rect.height;
+
+		viewBox.x = panStart.viewX - (event.clientX - panStart.x) * scaleX;
+		viewBox.y = panStart.viewY - (event.clientY - panStart.y) * scaleY;
+
+		applyViewBox(svgElement);
+	};
+
+	const handlePointerUp = (event: PointerEvent) => {
+		isPanning = false;
+		svgHost?.releasePointerCapture(event.pointerId);
 	};
 
 	const decorateLinks = (svg: SVGSVGElement) => {
@@ -187,7 +248,7 @@
 				decorateLinks(svg);
 				applyLabelScale(svg, $labelScale);
 				attachSvgInteractions(svg);
-				setupPanzoom(svg);
+				initViewBox(svg);
 			});
 		} catch (err) {
 			if (currentLoad !== loadCounter) return;
@@ -200,21 +261,37 @@
 	};
 
 	const zoomIn = () => {
-		if (!panzoomInstance || !svgHost) return;
-		const rect = svgHost.getBoundingClientRect();
-		panzoomInstance.smoothZoom(rect.width / 2, rect.height / 2, 1.5);
+		if (!svgElement) return;
+		const factor = 0.8; // Zoom in = smaller viewBox
+		const newWidth = viewBox.width * factor;
+		const newHeight = viewBox.height * factor;
+		// Center zoom
+		viewBox.x += (viewBox.width - newWidth) / 2;
+		viewBox.y += (viewBox.height - newHeight) / 2;
+		viewBox.width = newWidth;
+		viewBox.height = newHeight;
+		applyViewBox(svgElement);
 	};
 
 	const zoomOut = () => {
-		if (!panzoomInstance || !svgHost) return;
-		const rect = svgHost.getBoundingClientRect();
-		panzoomInstance.smoothZoom(rect.width / 2, rect.height / 2, 0.67);
+		if (!svgElement) return;
+		const factor = 1.25; // Zoom out = larger viewBox
+		const newWidth = viewBox.width * factor;
+		const newHeight = viewBox.height * factor;
+		// Limit max zoom out
+		if (newWidth > originalViewBox.width * 10) return;
+		// Center zoom
+		viewBox.x += (viewBox.width - newWidth) / 2;
+		viewBox.y += (viewBox.height - newHeight) / 2;
+		viewBox.width = newWidth;
+		viewBox.height = newHeight;
+		applyViewBox(svgElement);
 	};
 
 	const resetZoom = () => {
-		if (!panzoomInstance) return;
-		panzoomInstance.moveTo(0, 0);
-		panzoomInstance.zoomAbs(0, 0, 1);
+		if (!svgElement) return;
+		viewBox = { ...originalViewBox };
+		applyViewBox(svgElement);
 	};
 
 	const toggleFullscreen = () => {
@@ -249,7 +326,6 @@
 
 	onDestroy(() => {
 		detachSvgInteractions();
-		panzoomInstance?.dispose();
 	});
 </script>
 
@@ -340,9 +416,17 @@
 	</div>
 
 	<!-- SVG Container (always white background for diagrams) -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		bind:this={svgHost}
-		class="relative flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 wds-diagram-container"
+		class="relative flex-1 min-h-0 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 wds-diagram-container {isPanning
+			? 'cursor-grabbing'
+			: 'cursor-grab'}"
+		onwheel={handleWheel}
+		onpointerdown={handlePointerDown}
+		onpointermove={handlePointerMove}
+		onpointerup={handlePointerUp}
+		onpointerleave={handlePointerUp}
 	>
 		{#if loading}
 			<div class="flex h-full flex-col items-center justify-center gap-4 px-6">
