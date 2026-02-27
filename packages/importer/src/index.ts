@@ -5,13 +5,15 @@
  * Usage:
  *   npm run import                     # Import all models
  *   npm run import -- --models e60,e46 # Import specific models
+ *   npm run import -- --tree-only      # Import only tree data (skip shared files)
  *   npm run import -- --dry-run        # Dry run (validate only)
+ *   pnpm wds-importer list-models      # List available models in source
  */
 
 import { Command } from "commander";
 import chalk from "chalk";
 import PQueue from "p-queue";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir, access } from "node:fs/promises";
 import { join } from "node:path";
 import { defaultConfig, type Config, AVAILABLE_MODELS } from "./config.js";
 import { transformModel, type ModelTransformResult } from "./transformers/model-transformer.js";
@@ -26,6 +28,7 @@ interface ImportCliOptions {
   parallel?: number;
   dryRun?: boolean;
   verbose?: boolean;
+  treeOnly?: boolean;
 }
 
 function parseModelList(value: string): string[] {
@@ -33,6 +36,46 @@ function parseModelList(value: string): string[] {
     .split(",")
     .map((model) => model.trim())
     .filter((model) => model.length > 0);
+}
+
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Discover available models in source directory
+ * Models are directories under {sourcePath}/{language}/ that contain a "tree" subdirectory with XML files
+ */
+async function discoverModels(sourcePath: string, language: string): Promise<string[]> {
+  const langPath = join(sourcePath, language);
+
+  if (!(await fileExists(langPath))) {
+    throw new Error(`Source language path not found: ${langPath}`);
+  }
+
+  const entries = await readdir(langPath, { withFileTypes: true });
+  const models: string[] = [];
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+
+    const treePath = join(langPath, entry.name, "tree");
+    if (await fileExists(treePath)) {
+      // Check if tree directory has XML files
+      const treeEntries = await readdir(treePath);
+      const hasXml = treeEntries.some((f) => f.toLowerCase().endsWith(".xml"));
+      if (hasXml) {
+        models.push(entry.name);
+      }
+    }
+  }
+
+  return models.sort();
 }
 
 function resolveModels(config: Config): string[] {
@@ -47,15 +90,16 @@ function validateModels(models: string[]): void {
   }
 }
 
-function printHeader(config: Config, models: string[]): void {
+function printHeader(config: Config, models: string[], treeOnly: boolean): void {
   console.log(chalk.cyan.bold("\n🚀 WDS Import Tool"));
   console.log(chalk.cyan("=================="));
-  console.log(`Source:   ${config.sourcePath}`);
-  console.log(`Output:   ${config.outputPath}`);
-  console.log(`Language: ${config.language}`);
-  console.log(`Models:   ${models.join(", ")}`);
-  console.log(`Parallel: ${config.parallel}`);
-  console.log(`Dry run:  ${config.dryRun ? "Yes" : "No"}`);
+  console.log(`Source:    ${config.sourcePath}`);
+  console.log(`Output:    ${config.outputPath}`);
+  console.log(`Language:  ${config.language}`);
+  console.log(`Models:    ${models.join(", ")}`);
+  console.log(`Parallel:  ${config.parallel}`);
+  console.log(`Tree only: ${treeOnly ? "Yes (skip shared files)" : "No"}`);
+  console.log(`Dry run:   ${config.dryRun ? "Yes" : "No"}`);
   console.log("");
 }
 
@@ -69,16 +113,21 @@ async function runImport(options: ImportCliOptions): Promise<void> {
   if (options.dryRun) config.dryRun = true;
   if (options.verbose) config.verbose = true;
 
+  const treeOnly = options.treeOnly ?? false;
+
   const models = resolveModels(config);
   validateModels(models);
 
-  printHeader(config, models);
+  printHeader(config, models, treeOnly);
 
-  if (!config.dryRun) {
+  // Copy shared files only if not --tree-only
+  if (!config.dryRun && !treeOnly) {
     console.log(chalk.cyan("📷 Copying shared images..."));
     await copySharedImages(join(config.sourcePath, config.language), config.outputPath, config.dryRun);
     console.log(chalk.cyan("📷 Copying info page images..."));
     await copyZiImages(config.sourcePath, config.outputPath, config.dryRun);
+  } else if (treeOnly) {
+    console.log(chalk.yellow("⏭️  Skipping shared files (--tree-only mode)"));
   }
 
   const results: ModelTransformResult[] = [];
@@ -180,6 +229,44 @@ async function runStats(options: { output?: string }): Promise<void> {
   }
 }
 
+async function runListModels(options: { source?: string; language?: string }): Promise<void> {
+  const sourcePath = options.source ?? defaultConfig.sourcePath;
+  const language = options.language ?? defaultConfig.language;
+
+  console.log(chalk.cyan.bold("\n📋 WDS Available Models"));
+  console.log(chalk.cyan("======================="));
+  console.log(`Source:   ${sourcePath}`);
+  console.log(`Language: ${language}`);
+  console.log("");
+
+  try {
+    const models = await discoverModels(sourcePath, language);
+
+    if (models.length === 0) {
+      console.log(chalk.yellow("No models found in source directory."));
+      return;
+    }
+
+    console.log(chalk.cyan(`Found ${models.length} models:\n`));
+
+    // Compare with known models
+    const knownSet = new Set(AVAILABLE_MODELS);
+    for (const model of models) {
+      const isKnown = knownSet.has(model);
+      const marker = isKnown ? chalk.green("✓") : chalk.yellow("?");
+      const note = isKnown ? "" : chalk.gray(" (not in AVAILABLE_MODELS)");
+      console.log(`  ${marker} ${model}${note}`);
+    }
+
+    console.log("");
+    console.log(chalk.gray(`Use --models ${models.join(",")} to import all discovered models.`));
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error(chalk.red(`Failed to list models: ${err.message}`));
+    process.exitCode = 1;
+  }
+}
+
 const program = new Command();
 program
   .name("wds-importer")
@@ -194,6 +281,7 @@ program
   .option("--output <path>", "Output directory", defaultConfig.outputPath)
   .option("--language <code>", "Source language", defaultConfig.language)
   .option("--parallel <n>", "Parallel workers", (value) => parseInt(value, 10), defaultConfig.parallel)
+  .option("--tree-only", "Import only model tree data, skip shared files (diagrams, images, info)", false)
   .option("--dry-run", "Validate without writing files", false)
   .option("--verbose, -v", "Verbose logging", false)
   .action((options: ImportCliOptions) => runImport(options));
@@ -214,6 +302,13 @@ program
   .description("Show summary stats from generated indexes")
   .option("--output <path>", "Output directory", defaultConfig.outputPath)
   .action((options: { output?: string }) => runStats(options));
+
+program
+  .command("list-models")
+  .description("List available models in source directory")
+  .option("--source <path>", "Source data path", defaultConfig.sourcePath)
+  .option("--language <code>", "Source language", defaultConfig.language)
+  .action((options: { source?: string; language?: string }) => runListModels(options));
 
 program.parseAsync(process.argv).catch((error) => {
   console.error(chalk.red("❌ Fatal error:"), error);
