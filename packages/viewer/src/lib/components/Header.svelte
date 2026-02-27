@@ -54,7 +54,12 @@
 			</button>
 			<div>
 				<p class="text-xs font-semibold uppercase tracking-wide text-slate-400">WDS Viewer</p>
-				<h1 class="text-lg font-semibold text-slate-900 dark:text-white">Wiring Diagram System</h1>
+				<a
+					href={resolve('/')}
+					class="text-lg font-semibold text-slate-900 transition hover:text-blue-600 dark:text-white dark:hover:text-blue-400"
+				>
+					Wiring Diagram System
+				</a>
 			</div>
 		</div>
 		<div class="flex items-center gap-3">
