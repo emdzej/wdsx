@@ -72,6 +72,7 @@
 		/>
 		<kbd
 			class="pointer-events-none absolute right-2 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[11px] font-medium text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500"
-		>/</kbd>
+			>/</kbd
+		>
 	</div>
 </form>
