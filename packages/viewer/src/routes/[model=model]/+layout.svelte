@@ -22,6 +22,7 @@
 	let selectedResultIndex = $state(0);
 	let treeData = $state<ModelTree | null>(null);
 	let nodePathsMap = $state<Map<string, string>>(new Map());
+	let searchInputRef: HTMLInputElement | null = null;
 
 	// Resizable panel
 	let sidebarWidth = $state(320);
@@ -286,6 +287,42 @@
 		});
 		return unsubscribe;
 	});
+
+	// Global keyboard shortcuts for search focus
+	$effect(() => {
+		if (!browser) return;
+
+		const handleKeydown = (event: KeyboardEvent) => {
+			// Cmd/Ctrl+K
+			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+				event.preventDefault();
+				searchInputRef?.focus();
+				searchInputRef?.select();
+				return;
+			}
+
+			// "/" key (but not when typing in an input/textarea)
+			if (event.key === '/' && !isEditableTarget(event.target)) {
+				event.preventDefault();
+				searchInputRef?.focus();
+				searchInputRef?.select();
+			}
+		};
+
+		const isEditableTarget = (target: EventTarget | null): boolean => {
+			if (!target || !(target instanceof HTMLElement)) return false;
+			const tagName = target.tagName.toLowerCase();
+			return (
+				tagName === 'input' ||
+				tagName === 'textarea' ||
+				tagName === 'select' ||
+				target.isContentEditable
+			);
+		};
+
+		window.addEventListener('keydown', handleKeydown);
+		return () => window.removeEventListener('keydown', handleKeydown);
+	});
 </script>
 
 <div
@@ -308,12 +345,13 @@
 		<!-- Search input -->
 		<div class="relative mb-3">
 			<input
+				bind:this={searchInputRef}
 				type="text"
 				bind:value={searchQuery}
 				oninput={handleSearchInput}
 				onkeydown={handleSearchKeydown}
 				placeholder="Search diagrams & info..."
-				class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 pl-9 text-sm placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500"
+				class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 pl-9 pr-8 text-sm placeholder-slate-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder-slate-500"
 			/>
 			<svg
 				class="absolute left-3 top-2.5 h-4 w-4 text-slate-400"
@@ -328,6 +366,10 @@
 					d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
 				/>
 			</svg>
+			<kbd
+				class="pointer-events-none absolute right-2 top-2 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-500"
+				>/</kbd
+			>
 
 			<!-- Search results dropdown -->
 			{#if searchResults.length > 0}
