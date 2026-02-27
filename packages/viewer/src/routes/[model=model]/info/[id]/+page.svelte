@@ -16,6 +16,7 @@
 	import { infoNames } from '$lib/stores/tree';
 	import { addToHistory } from '$lib/stores/history';
 	import AddToCollectionButton from '$lib/components/AddToCollectionButton.svelte';
+	import DocumentMagnifier from '$lib/components/DocumentMagnifier.svelte';
 
 	let loading = $state(true);
 	let error = $state<string | null>(null);
@@ -385,6 +386,9 @@
 			</div>
 		{/if}
 	</div>
+
+	<!-- Image magnifier for Alt+hover on images -->
+	<DocumentMagnifier container={markdownHost} zoom={2.5} lensSize={180} />
 </div>
 
 <style>
