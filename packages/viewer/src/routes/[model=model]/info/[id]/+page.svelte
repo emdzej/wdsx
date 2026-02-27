@@ -388,7 +388,7 @@
 	</div>
 
 	<!-- Image magnifier for Alt+hover on images -->
-	<DocumentMagnifier container={markdownHost} zoom={2.5} lensSize={180} />
+	<DocumentMagnifier container={markdownHost} zoom={5} lensSize={300} />
 </div>
 
 <style>
