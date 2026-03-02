@@ -251,3 +251,7 @@ Health check endpoint: `GET /health`
 MIT. 
 
 **Note:** Original BMW WDS data is property of BMW AG and is not included in this repository. You must provide your own legally obtained WDS source files.
+
+## License
+
+Licensed under [PolyForm Noncommercial 1.0.0](LICENSE) — free for personal and educational use, no commercial use permitted.
