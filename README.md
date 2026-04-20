@@ -45,6 +45,10 @@ wdsx/
 └── docs/              # Additional documentation
 ```
 
+## Documentation
+
+- **[User Guide](docs/USER_GUIDE.md)** — visual walkthrough of all viewer features (with screenshots)
+
 ## Quick Start
 
 ### Prerequisites

@@ -45,6 +45,11 @@ yarn-error.log*
 # Testing
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
+
+# Screenshots (generated, commit only .gitkeep)
+docs/screenshots/**/*.png
 
 # Temp files
 tmp/
@@ -52,3 +57,4 @@ temp/
 *.tmp
 .turbo
 .data
+data
