@@ -403,11 +403,7 @@
 		isFullscreen = Boolean(document.fullscreenElement);
 	};
 
-	const svgToPngBlob = async (
-		svg: SVGSVGElement,
-		width: number,
-		height: number
-	): Promise<Blob> => {
+	const svgToPngBlob = async (svg: SVGSVGElement, width: number, height: number): Promise<Blob> => {
 		const xml = new XMLSerializer().serializeToString(svg);
 		const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
 		const url = URL.createObjectURL(svgBlob);
@@ -441,10 +437,7 @@
 		if (!svgElement || !svgHost) throw new Error('Diagram not ready');
 		const clone = svgElement.cloneNode(true) as SVGSVGElement;
 		const target = area === 'full' ? originalViewBox : viewBox;
-		clone.setAttribute(
-			'viewBox',
-			`${target.x} ${target.y} ${target.width} ${target.height}`
-		);
+		clone.setAttribute('viewBox', `${target.x} ${target.y} ${target.width} ${target.height}`);
 
 		const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
 		style.textContent = `
@@ -495,8 +488,7 @@
 			.write([new ClipboardItem({ 'image/png': blobPromise })])
 			.then(() => {
 				screenshotStatus = 'copied';
-				screenshotMessage =
-					area === 'full' ? 'Copied full diagram' : 'Copied visible area';
+				screenshotMessage = area === 'full' ? 'Copied full diagram' : 'Copied visible area';
 			})
 			.catch((err: unknown) => {
 				console.error('Failed to copy diagram screenshot', err);
