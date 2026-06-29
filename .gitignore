@@ -16,11 +16,11 @@ source-data/
 /release/
 
 # Allow empty viewer static data directory in repo
-!packages/viewer/static/data/
-!packages/viewer/static/data/.gitkeep
+!apps/viewer/static/data/
+!apps/viewer/static/data/.gitkeep
 
 # Allow favicon.svg
-!packages/viewer/src/lib/assets/favicon.svg
+!apps/viewer/src/lib/assets/favicon.svg
 
 # Environment
 .env
