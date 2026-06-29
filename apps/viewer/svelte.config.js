@@ -13,7 +13,9 @@ const config = {
 	preprocess: [mdsvex(mdsvexOptions)],
 	kit: {
 		adapter: adapter({
-			fallback: '404.html'
+			// SPA shell — every URL is served this file by nginx and
+			// SvelteKit's client router takes over.
+			fallback: 'index.html'
 		}),
 		paths: {
 			base: basePath,
