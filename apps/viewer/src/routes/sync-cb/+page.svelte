@@ -16,6 +16,18 @@
 			isError = true;
 			return;
 		}
+		// completePairingFromUrl() decides between popup-postMessage and
+		// local-save based on `window.opener`. Chrome (and any flow that
+		// preserves the opener relationship across a cross-origin
+		// navigation) can leave it set even though we're in plain redirect
+		// mode — which would silently post tokens to a phantom opener and
+		// skip the localStorage save, leaving us stuck on "not paired".
+		// Force the local path; we no longer support popup mode.
+		try {
+			(window as unknown as { opener: Window | null }).opener = null;
+		} catch {
+			/* opener is read-only in some sandboxed contexts; safe to ignore */
+		}
 		const ok = bass.completePairingFromUrl();
 		if (!ok) {
 			status = 'No tokens found in the callback URL — pairing failed.';
@@ -29,10 +41,7 @@
 			if (seeded > 0) status = `Paired. Seeded ${seeded} setting${seeded === 1 ? '' : 's'}.`;
 		}
 		status = 'Paired. Redirecting…';
-		// Popup flow: the library closed the popup already. Redirect flow: bounce home.
-		if (!window.opener) {
-			setTimeout(() => goto(resolve('/')), 400);
-		}
+		setTimeout(() => goto(resolve('/')), 400);
 	});
 </script>
 
