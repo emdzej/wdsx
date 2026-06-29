@@ -20,6 +20,12 @@ importers:
 
   apps/viewer:
     dependencies:
+      '@emdzej/bass-client':
+        specifier: ^0.1.0
+        version: 0.1.0
+      '@emdzej/bass-svelte':
+        specifier: ^0.1.0
+        version: 0.1.0(@emdzej/bass-client@0.1.0)(svelte@5.50.0)
       '@emdzej/wds-core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -707,6 +713,15 @@ packages:
   '@csstools/css-tokenizer@3.0.4':
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
+
+  '@emdzej/bass-client@0.1.0':
+    resolution: {integrity: sha512-YbFjkY6CVETOdnnp75afnWIrjEdzUm6P3NeVWl7/Mr34UKl2PzeUpgyIf1ahHZ+JYxB+PdxhOZNJWGhcjZITqg==}
+
+  '@emdzej/bass-svelte@0.1.0':
+    resolution: {integrity: sha512-FfRxRekoaNP8AQ3nAe16XdRaHjoXdyjTyr6prF/K9z8eiwKzOrG2i9McMk054+urDDlZgmtOxqR+wOwL3cbvwg==}
+    peerDependencies:
+      '@emdzej/bass-client': 0.1.0
+      svelte: ^5.0.0
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -4558,6 +4573,13 @@ snapshots:
       '@csstools/css-tokenizer': 3.0.4
 
   '@csstools/css-tokenizer@3.0.4': {}
+
+  '@emdzej/bass-client@0.1.0': {}
+
+  '@emdzej/bass-svelte@0.1.0(@emdzej/bass-client@0.1.0)(svelte@5.50.0)':
+    dependencies:
+      '@emdzej/bass-client': 0.1.0
+      svelte: 5.50.0
 
   '@esbuild/aix-ppc64@0.21.5':
     optional: true

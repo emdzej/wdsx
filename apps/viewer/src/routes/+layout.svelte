@@ -6,6 +6,7 @@
 	import type { ModelMeta } from '@emdzej/wds-core';
 	import Header from '$lib/components/Header.svelte';
 	import { initTheme } from '$lib/stores/theme';
+	import { startBassLifecycle } from '$lib/bass';
 
 	let { children } = $props<{ children: () => unknown }>();
 
@@ -20,6 +21,8 @@
 	});
 
 	onMount(async () => {
+		// Hydrate from bass before reading theme so synced settings win on cold boot.
+		await startBassLifecycle();
 		initTheme();
 		try {
 			const modelsIndex = await loadModelsIndex(fetch);

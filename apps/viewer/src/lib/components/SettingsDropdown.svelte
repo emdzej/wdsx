@@ -6,10 +6,82 @@
 		type CollectionsExport
 	} from '$lib/stores/collections';
 	import { theme, toggleTheme } from '$lib/stores/theme';
+	import { bassServiceUrl } from '$lib/stores/bass-config';
+	import { getBass, resetBass, startBassLifecycle } from '$lib/bass';
+	import type { AuthState } from '@emdzej/bass-client';
+	import { useBassAuth } from '@emdzej/bass-svelte';
+	import type { Readable } from 'svelte/store';
+	import { browser } from '$app/environment';
+	import { writable } from 'svelte/store';
 
 	let isOpen = $state(false);
 	let fileInput: HTMLInputElement;
 	let importMessage = $state<string | null>(null);
+
+	// Editable copy of the saved URL, only persisted via the Save button.
+	let serviceUrlInput = $state($bassServiceUrl);
+	let syncMessage = $state<string | null>(null);
+	let pairing = $state(false);
+
+	// A fallback empty store keeps the subscription stable when bass isn't ready.
+	const emptyAuth: Readable<AuthState> = writable({ isPaired: false } as AuthState);
+	let authStore = $state<Readable<AuthState>>(emptyAuth);
+
+	$effect(() => {
+		// Re-subscribe to a fresh auth store whenever the configured URL changes.
+		void $bassServiceUrl;
+		if (!browser) return;
+		const bass = getBass();
+		authStore = bass ? useBassAuth(bass) : emptyAuth;
+	});
+
+	const handleSaveServiceUrl = () => {
+		const trimmed = serviceUrlInput.trim();
+		if (trimmed === $bassServiceUrl.trim()) return;
+		resetBass();
+		bassServiceUrl.set(trimmed);
+		syncMessage = trimmed ? 'Service URL saved' : 'Service URL cleared';
+		setTimeout(() => (syncMessage = null), 2000);
+	};
+
+	const handlePair = async (mode: 'redirect' | 'popup') => {
+		const bass = getBass();
+		if (!bass) {
+			syncMessage = 'Set a service URL first';
+			setTimeout(() => (syncMessage = null), 2500);
+			return;
+		}
+		pairing = true;
+		try {
+			await bass.pair({
+				redirectUri: location.origin + '/sync-cb',
+				mode,
+				deviceLabel: navigator.userAgent.slice(0, 60)
+			});
+			// `redirect` mode never returns. `popup` mode resumes here.
+			await startBassLifecycle();
+		} catch (err) {
+			console.error('bass.pair failed', err);
+			syncMessage = err instanceof Error ? err.message : 'Pairing failed';
+			setTimeout(() => (syncMessage = null), 3000);
+		} finally {
+			pairing = false;
+		}
+	};
+
+	const handleUnpair = async () => {
+		const bass = getBass();
+		if (!bass) return;
+		try {
+			await bass.unpair();
+			syncMessage = 'Unpaired';
+			setTimeout(() => (syncMessage = null), 2000);
+		} catch (err) {
+			console.error('bass.unpair failed', err);
+			syncMessage = err instanceof Error ? err.message : 'Unpair failed';
+			setTimeout(() => (syncMessage = null), 3000);
+		}
+	};
 
 	const handleExportFavorites = () => {
 		const data = exportAllFavorites();
@@ -114,7 +186,7 @@
 
 	{#if isOpen}
 		<div
-			class="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
+			class="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900"
 		>
 			<div class="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
 				<h3 class="font-semibold text-slate-900 dark:text-white">Settings</h3>
@@ -223,6 +295,75 @@
 				{#if importMessage}
 					<p class="mt-2 px-3 text-xs text-emerald-600 dark:text-emerald-400">{importMessage}</p>
 				{/if}
+
+				<!-- Sync (bass) -->
+				<p class="mt-3 px-2 py-1 text-xs font-medium uppercase tracking-wide text-slate-400">
+					Sync
+				</p>
+
+				<div class="px-3 py-2 space-y-2">
+					<label class="block text-xs text-slate-500 dark:text-slate-400" for="bass-url">
+						Service URL
+					</label>
+					<div class="flex gap-1">
+						<input
+							id="bass-url"
+							type="url"
+							placeholder="https://bass.example.com"
+							bind:value={serviceUrlInput}
+							onblur={handleSaveServiceUrl}
+							onkeydown={(e) => e.key === 'Enter' && handleSaveServiceUrl()}
+							class="flex-1 min-w-0 rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 focus:border-sky-400 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+						/>
+					</div>
+
+					{#if $bassServiceUrl}
+						<p class="text-xs text-slate-500 dark:text-slate-400">
+							{#if $authStore.isPaired}
+								<span class="text-emerald-600 dark:text-emerald-400">●</span> Paired
+								{#if $authStore.deviceId}
+									· <code class="font-mono text-[10px]">{$authStore.deviceId.slice(0, 8)}…</code>
+								{/if}
+							{:else}
+								<span class="text-slate-400">○</span> Not paired
+							{/if}
+						</p>
+
+						<div class="flex gap-1">
+							{#if $authStore.isPaired}
+								<button
+									type="button"
+									class="flex-1 rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 transition hover:border-rose-300 hover:text-rose-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-rose-700 dark:hover:text-rose-400"
+									onclick={handleUnpair}
+								>
+									Unpair
+								</button>
+							{:else}
+								<button
+									type="button"
+									disabled={pairing}
+									class="flex-1 rounded border border-sky-300 bg-sky-50 px-2 py-1 text-xs font-medium text-sky-700 transition hover:bg-sky-100 disabled:opacity-50 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300 dark:hover:bg-sky-900"
+									onclick={() => handlePair('redirect')}
+								>
+									Pair
+								</button>
+								<button
+									type="button"
+									disabled={pairing}
+									class="rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 transition hover:border-slate-300 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+									onclick={() => handlePair('popup')}
+									title="Pair via popup"
+								>
+									Popup
+								</button>
+							{/if}
+						</div>
+					{/if}
+
+					{#if syncMessage}
+						<p class="text-xs text-emerald-600 dark:text-emerald-400">{syncMessage}</p>
+					{/if}
+				</div>
 			</div>
 		</div>
 	{/if}
