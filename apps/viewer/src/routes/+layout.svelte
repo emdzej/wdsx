@@ -6,7 +6,7 @@
 	import type { ModelMeta } from '@emdzej/wds-core';
 	import Header from '$lib/components/Header.svelte';
 	import { initTheme } from '$lib/stores/theme';
-	import { startBassLifecycle } from '$lib/bass';
+	import { seedFromLocalStorage, startBassLifecycle, takeSeedIntent } from '$lib/bass';
 
 	let { children } = $props<{ children: () => unknown }>();
 
@@ -23,6 +23,12 @@
 	onMount(async () => {
 		// Hydrate from bass before reading theme so synced settings win on cold boot.
 		await startBassLifecycle();
+		// If the user just paired with the Seed checkbox ticked, push the
+		// pre-existing wdsx-* / theme keys to the server. Runs after
+		// hydrate so the server wins for any overlapping keys.
+		if (takeSeedIntent()) {
+			seedFromLocalStorage();
+		}
 		initTheme();
 		try {
 			const modelsIndex = await loadModelsIndex(fetch);

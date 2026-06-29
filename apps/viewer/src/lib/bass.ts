@@ -86,6 +86,38 @@ export function seedFromLocalStorage(): number {
 	return count;
 }
 
+// Parse the OIDC redirect fragment ourselves and write the token blob
+// straight into the localStorage slot the bass client reads from. We
+// bypass bass-client's completePairingFromUrl() — its detection of
+// "popup mode" via window.opener fires false positives in both Chrome
+// and Safari when wdsx is loaded behind an auth-proxy that chains
+// redirects (the opener relationship survives the cross-origin
+// navigation), and the function silently posts tokens to a phantom
+// opener instead of saving them locally.
+//
+// The token key + JSON shape mirror bass-client's TokenStore (see
+// packages/client/src/storage/tokens.ts) so a freshly constructed
+// BassClient picks them up.
+export function persistTokensFromHash(): boolean {
+	if (!browser) return false;
+	const frag = window.location.hash.replace(/^#/, '');
+	if (!frag) return false;
+	const params = new URLSearchParams(frag);
+	const sync = params.get('sync_token');
+	const refresh = params.get('refresh_token');
+	const deviceId = params.get('device_id');
+	const expiresIn = Number(params.get('expires_in') ?? '0');
+	if (!sync || !refresh || !deviceId || !expiresIn) return false;
+	const tokenSet = {
+		deviceId,
+		syncToken: sync,
+		refreshToken: refresh,
+		expiresAt: Date.now() + expiresIn * 1000
+	};
+	localStorage.setItem(`__bass_tokens__:${APP_ID}`, JSON.stringify(tokenSet));
+	return true;
+}
+
 // Persisted across the OIDC redirect via sessionStorage so the /sync-cb
 // route knows whether the user opted into seeding when they clicked Pair.
 const SEED_INTENT_KEY = 'wdsx_bass_seed_on_pair';
