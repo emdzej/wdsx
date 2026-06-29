@@ -88,7 +88,7 @@ Shows all vehicle models available in your WDS source.
 ```bash
 pnpm --filter @emdzej/wds-importer exec wds-importer import \
   --source /path/to/wds/release \
-  --output packages/viewer/static/data \
+  --output apps/viewer/static/data \
   --language us
 ```
 
@@ -166,7 +166,7 @@ data/
 # Ensure data is imported first
 pnpm --filter @emdzej/wds-importer exec wds-importer import \
   --source /path/to/wds/release \
-  --output packages/viewer/static/data
+  --output apps/viewer/static/data
 
 # Start dev server
 pnpm dev
@@ -180,7 +180,7 @@ Opens at http://localhost:5173
 pnpm build
 ```
 
-Output: `packages/viewer/build/` — serve with any static file server.
+Output: `apps/viewer/build/` — serve with any static file server.
 
 ### Docker
 

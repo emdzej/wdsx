@@ -13,7 +13,7 @@ WORKDIR /app
 # Copy package files first for better caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/core/package.json ./packages/core/
-COPY packages/viewer/package.json ./packages/viewer/
+COPY apps/viewer/package.json ./apps/viewer/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
@@ -21,7 +21,7 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY tsconfig.base.json tsconfig.json turbo.json ./
 COPY packages/core ./packages/core
-COPY packages/viewer ./packages/viewer
+COPY apps/viewer ./apps/viewer
 
 # Build the application
 # Note: Data files are mounted at runtime, not during build
@@ -77,7 +77,7 @@ server {
 EOF
 
 # Copy built assets from builder
-COPY --from=builder /app/packages/viewer/build /usr/share/nginx/html
+COPY --from=builder /app/apps/viewer/build /usr/share/nginx/html
 
 # Create data directory mount point
 RUN mkdir -p /data

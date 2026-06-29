@@ -19,7 +19,7 @@ pnpm --filter viewer dev
 The viewer expects JSON data under `/data`. You can:
 
 - Mount/serve data at `http://localhost:5173/data/...` (proxy or static server), or
-- Copy/symlink generated data into `packages/viewer/static/data` for local testing.
+- Copy/symlink generated data into `apps/viewer/static/data` for local testing.
 
 If your data lives elsewhere, set:
 
@@ -33,7 +33,7 @@ VITE_WDS_DATA_BASE="/path-or-url"
 pnpm --filter viewer build
 ```
 
-Static output is emitted to `packages/viewer/build`.
+Static output is emitted to `apps/viewer/build`.
 
 ## GitHub Pages
 

@@ -63,7 +63,7 @@ async function waitForServer(url, timeoutMs = 30000) {
 /** Start dev server, return a kill function */
 function startPreview() {
 	const proc = spawn('pnpm', ['run', 'dev', '--port', '5173'], {
-		cwd: resolve(__dirname, '..', 'packages', 'viewer'),
+		cwd: resolve(__dirname, '..', 'apps', 'viewer'),
 		stdio: 'ignore',
 		shell: true
 	});

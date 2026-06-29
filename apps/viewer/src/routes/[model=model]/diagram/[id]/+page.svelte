@@ -19,6 +19,9 @@
 	let svgHost: HTMLDivElement | null = null;
 	let svgElement: SVGSVGElement | null = null;
 	let loadCounter = 0;
+	let screenshotMenuOpen = $state(false);
+	let screenshotStatus = $state<'idle' | 'copying' | 'copied' | 'error'>('idle');
+	let screenshotMessage = $state<string | null>(null);
 
 	// ViewBox-based pan/zoom state
 	let viewBox = $state({ x: 0, y: 0, width: 0, height: 0 });
@@ -400,6 +403,127 @@
 		isFullscreen = Boolean(document.fullscreenElement);
 	};
 
+	const svgToPngBlob = async (
+		svg: SVGSVGElement,
+		width: number,
+		height: number
+	): Promise<Blob> => {
+		const xml = new XMLSerializer().serializeToString(svg);
+		const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
+		const url = URL.createObjectURL(svgBlob);
+		try {
+			const img = new Image();
+			img.src = url;
+			await new Promise<void>((resolve, reject) => {
+				img.onload = () => resolve();
+				img.onerror = () => reject(new Error('Failed to load SVG'));
+			});
+			const canvas = document.createElement('canvas');
+			canvas.width = Math.max(1, Math.round(width));
+			canvas.height = Math.max(1, Math.round(height));
+			const ctx = canvas.getContext('2d');
+			if (!ctx) throw new Error('Canvas context unavailable');
+			ctx.fillStyle = '#ffffff';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+			return await new Promise<Blob>((resolve, reject) => {
+				canvas.toBlob((blob) => {
+					if (blob) resolve(blob);
+					else reject(new Error('Could not generate PNG'));
+				}, 'image/png');
+			});
+		} finally {
+			URL.revokeObjectURL(url);
+		}
+	};
+
+	const buildScreenshotBlob = async (area: 'full' | 'visible'): Promise<Blob> => {
+		if (!svgElement || !svgHost) throw new Error('Diagram not ready');
+		const clone = svgElement.cloneNode(true) as SVGSVGElement;
+		const target = area === 'full' ? originalViewBox : viewBox;
+		clone.setAttribute(
+			'viewBox',
+			`${target.x} ${target.y} ${target.width} ${target.height}`
+		);
+
+		const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+		style.textContent = `
+			.wds-diagram-link * { stroke: #0ea5e9; }
+			.wds-diagram-link text { fill: #0ea5e9; }
+		`;
+		clone.insertBefore(style, clone.firstChild);
+
+		let outWidth: number;
+		let outHeight: number;
+		const aspect = target.height > 0 ? target.width / target.height : 1;
+
+		if (area === 'visible') {
+			const rect = svgHost.getBoundingClientRect();
+			const scale = Math.min(2, window.devicePixelRatio || 1) || 1;
+			outWidth = rect.width * scale;
+			outHeight = rect.height * scale;
+		} else {
+			const maxDim = 3200;
+			if (aspect >= 1) {
+				outWidth = maxDim;
+				outHeight = maxDim / aspect;
+			} else {
+				outHeight = maxDim;
+				outWidth = maxDim * aspect;
+			}
+		}
+
+		clone.setAttribute('width', String(outWidth));
+		clone.setAttribute('height', String(outHeight));
+
+		return svgToPngBlob(clone, outWidth, outHeight);
+	};
+
+	const copyDiagramToClipboard = (area: 'full' | 'visible') => {
+		if (!svgElement || !svgHost || screenshotStatus === 'copying') return;
+		screenshotMenuOpen = false;
+		screenshotStatus = 'copying';
+		screenshotMessage = null;
+
+		// Pass the Promise<Blob> directly to ClipboardItem so the browser
+		// keeps the user-gesture transient activation alive while we
+		// serialize + rasterize the SVG. Awaiting the blob before calling
+		// clipboard.write() makes Safari/Firefox reject as "not allowed".
+		const blobPromise = buildScreenshotBlob(area);
+
+		navigator.clipboard
+			.write([new ClipboardItem({ 'image/png': blobPromise })])
+			.then(() => {
+				screenshotStatus = 'copied';
+				screenshotMessage =
+					area === 'full' ? 'Copied full diagram' : 'Copied visible area';
+			})
+			.catch((err: unknown) => {
+				console.error('Failed to copy diagram screenshot', err);
+				screenshotStatus = 'error';
+				screenshotMessage =
+					err instanceof Error && err.name === 'NotAllowedError'
+						? 'Clipboard permission denied'
+						: err instanceof Error
+							? err.message
+							: 'Failed to copy screenshot';
+			})
+			.finally(() => {
+				setTimeout(() => {
+					screenshotStatus = 'idle';
+					screenshotMessage = null;
+				}, 2000);
+			});
+	};
+
+	const handleScreenshotClickOutside = (e: MouseEvent) => {
+		if (!screenshotMenuOpen) return;
+		const target = e.target as HTMLElement;
+		if (!target.closest('.wds-screenshot-menu')) {
+			screenshotMenuOpen = false;
+		}
+	};
+
 	$effect(() => {
 		if (!diagramId) return;
 		void loadDiagram(diagramId);
@@ -421,6 +545,8 @@
 		detachSvgInteractions();
 	});
 </script>
+
+<svelte:window onclick={handleScreenshotClickOutside} />
 
 <div class="flex h-full flex-col">
 	<!-- Header with controls -->
@@ -507,6 +633,85 @@
 					/>
 					<span class="w-8 text-right tabular-nums">{$labelScale}%</span>
 				</label>
+			</div>
+			<div class="wds-screenshot-menu relative">
+				<button
+					onclick={() => (screenshotMenuOpen = !screenshotMenuOpen)}
+					disabled={screenshotStatus === 'copying'}
+					class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-wait disabled:opacity-60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-700 print:hidden"
+					type="button"
+					title={screenshotMessage ?? 'Copy diagram screenshot'}
+					aria-haspopup="menu"
+					aria-expanded={screenshotMenuOpen}
+				>
+					{#if screenshotStatus === 'copied'}
+						<svg class="h-4 w-4 text-emerald-500" viewBox="0 0 20 20" fill="currentColor">
+							<path
+								fill-rule="evenodd"
+								d="M16.704 5.29a1 1 0 010 1.42l-8 8a1 1 0 01-1.42 0l-4-4a1 1 0 011.42-1.42L8 12.586l7.296-7.296a1 1 0 011.408 0z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					{:else if screenshotStatus === 'error'}
+						<svg class="h-4 w-4 text-rose-500" viewBox="0 0 20 20" fill="currentColor">
+							<path
+								fill-rule="evenodd"
+								d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+								clip-rule="evenodd"
+							/>
+						</svg>
+					{:else}
+						<svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+							<path
+								d="M4 5a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a4 4 0 100-8 4 4 0 000 8z"
+							/>
+						</svg>
+					{/if}
+				</button>
+
+				{#if screenshotMenuOpen}
+					<div
+						class="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
+						role="menu"
+					>
+						<button
+							type="button"
+							role="menuitem"
+							class="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+							onclick={() => copyDiagramToClipboard('full')}
+						>
+							<svg
+								class="h-4 w-4 flex-none text-slate-500 dark:text-slate-400"
+								viewBox="0 0 20 20"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.5"
+							>
+								<rect x="3" y="3" width="14" height="14" rx="1" />
+							</svg>
+							Copy entire diagram
+						</button>
+						<button
+							type="button"
+							role="menuitem"
+							class="flex w-full items-center gap-3 px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+							onclick={() => copyDiagramToClipboard('visible')}
+						>
+							<svg
+								class="h-4 w-4 flex-none text-slate-500 dark:text-slate-400"
+								viewBox="0 0 20 20"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<path d="M3 7V4h3M17 7V4h-3M3 13v3h3M17 13v3h-3" />
+							</svg>
+							Copy visible area
+						</button>
+					</div>
+				{/if}
 			</div>
 			<button
 				onclick={() => window.print()}
