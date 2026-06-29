@@ -7,7 +7,7 @@
 	} from '$lib/stores/collections';
 	import { theme, toggleTheme } from '$lib/stores/theme';
 	import { bassServiceUrl } from '$lib/stores/bass-config';
-	import { getBass, resetBass, startBassLifecycle } from '$lib/bass';
+	import { getBass, resetBass, setSeedIntent } from '$lib/bass';
 	import type { AuthState } from '@emdzej/bass-client';
 	import { useBassAuth } from '@emdzej/bass-svelte';
 	import type { Readable } from 'svelte/store';
@@ -22,6 +22,7 @@
 	let serviceUrlInput = $state($bassServiceUrl);
 	let syncMessage = $state<string | null>(null);
 	let pairing = $state(false);
+	let seedOnPair = $state(true);
 
 	// A fallback empty store keeps the subscription stable when bass isn't ready.
 	const emptyAuth: Readable<AuthState> = writable({ isPaired: false } as AuthState);
@@ -44,7 +45,7 @@
 		setTimeout(() => (syncMessage = null), 2000);
 	};
 
-	const handlePair = async (mode: 'redirect' | 'popup') => {
+	const handlePair = async () => {
 		const bass = getBass();
 		if (!bass) {
 			syncMessage = 'Set a service URL first';
@@ -52,16 +53,19 @@
 			return;
 		}
 		pairing = true;
+		setSeedIntent(seedOnPair);
 		try {
+			// Redirect mode — control never returns to this handler. The
+			// /sync-cb route completes the pair, runs the lifecycle, and
+			// honours the seed intent we just stored.
 			await bass.pair({
 				redirectUri: location.origin + '/sync-cb',
-				mode,
+				mode: 'redirect',
 				deviceLabel: navigator.userAgent.slice(0, 60)
 			});
-			// `redirect` mode never returns. `popup` mode resumes here.
-			await startBassLifecycle();
 		} catch (err) {
 			console.error('bass.pair failed', err);
+			setSeedIntent(false);
 			syncMessage = err instanceof Error ? err.message : 'Pairing failed';
 			setTimeout(() => (syncMessage = null), 3000);
 		} finally {
@@ -329,7 +333,7 @@
 							{/if}
 						</p>
 
-						<div class="flex gap-1">
+						<div class="flex items-center gap-2">
 							{#if $authStore.isPaired}
 								<button
 									type="button"
@@ -343,19 +347,21 @@
 									type="button"
 									disabled={pairing}
 									class="flex-1 rounded border border-sky-300 bg-sky-50 px-2 py-1 text-xs font-medium text-sky-700 transition hover:bg-sky-100 disabled:opacity-50 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-300 dark:hover:bg-sky-900"
-									onclick={() => handlePair('redirect')}
+									onclick={handlePair}
 								>
 									Pair
 								</button>
-								<button
-									type="button"
-									disabled={pairing}
-									class="rounded border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 transition hover:border-slate-300 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
-									onclick={() => handlePair('popup')}
-									title="Pair via popup"
+								<label
+									class="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300"
+									title="Push the settings you already have on this device to the sync service after pairing"
 								>
-									Popup
-								</button>
+									<input
+										type="checkbox"
+										bind:checked={seedOnPair}
+										class="h-3.5 w-3.5 rounded accent-sky-500"
+									/>
+									Seed
+								</label>
 							{/if}
 						</div>
 					{/if}

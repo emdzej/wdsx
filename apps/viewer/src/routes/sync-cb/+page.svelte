@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
-	import { getBass, startBassLifecycle } from '$lib/bass';
+	import { getBass, seedFromLocalStorage, startBassLifecycle, takeSeedIntent } from '$lib/bass';
 
 	let status = $state('Completing pairing…');
 	let isError = $state(false);
@@ -24,6 +24,10 @@
 		}
 		status = 'Paired. Hydrating…';
 		await startBassLifecycle();
+		if (takeSeedIntent()) {
+			const seeded = seedFromLocalStorage();
+			if (seeded > 0) status = `Paired. Seeded ${seeded} setting${seeded === 1 ? '' : 's'}.`;
+		}
 		status = 'Paired. Redirecting…';
 		// Popup flow: the library closed the popup already. Redirect flow: bounce home.
 		if (!window.opener) {
